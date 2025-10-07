@@ -132,6 +132,12 @@ a {
         background-color: black;
         color: white;
     }
+
+    .mobile-menu:hover .marquee-text:hover {
+        background-color: white;
+        color: black;
+    }
+
     .mobile-menu {
         background-color: white;
         border-right: 1.5px solid black;
@@ -159,6 +165,11 @@ a {
     .marquee-text:hover {
         background-color: white;
         color: black;
+    }
+
+    .mobile-menu:hover .marquee-text:hover {
+        background-color: black;
+        color: white;
     }
 
     .mobile-menu {
