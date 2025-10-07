@@ -189,6 +189,10 @@ a {
         margin-bottom: 4px;
     }
 
+    .marquee-text:hover {
+        background-color: none;
+    }
+
     .marquee-header {
         font-size: 34px;
         letter-spacing: -2.5px;
