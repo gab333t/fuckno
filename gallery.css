@@ -1,0 +1,48 @@
+@font-face {
+    font-family: Articulate;
+    font-weight: normal;
+    src: url("fonts/SBArticulateTest-Regular.otf") format("opentype");
+}
+
+@font-face {
+    font-family: Articulate;
+    font-weight: medium;
+    src: url("fonts/SBArticulateTest-Medium.otf") format("opentype");
+}
+
+@font-face {
+    font-family: Articulate;
+    font-weight: bold;
+    src: url("fonts/SBArticulateTest-Bold.otf") format("opentype");
+}
+
+@font-face {
+    font-family: Articulate;
+    font-weight: lighter;
+    src: url("fonts/SBArticulateTest-Light.otf") format("opentype");
+}
+
+h1 {
+    font-family: Articulate;
+    font-weight: medium;
+    font-size: 1.3vw;
+    letter-spacing: 0.05vw;
+}
+
+@media (prefers-color-scheme: light) {
+    body {
+        background-color: white;
+    }
+    h1 {
+        color: black;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: black;
+    }
+    h1 {
+        color: white;
+    }
+}

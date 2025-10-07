@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUCK NO ˣ ABOUT</title>
+    <link rel="stylesheet" href="about.css">
+    <link rel="icon" type="image/x-icon" href="img/favicon_light.svg">
+</head>
+<body>
+
+</body>
+<script>
+    function setFavicon() {
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const faviconPath = isDarkMode ? 'img/favicon_dark.svg' : 'img/favicon_light.svg';
+
+        let favicon = document.querySelector("link[rel='icon']");
+        if (!favicon) {
+            favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            document.head.appendChild(favicon);
+        }
+        favicon.href = faviconPath;
+    }
+    setFavicon();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setFavicon);
+</script>
