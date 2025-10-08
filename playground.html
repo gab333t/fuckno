@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FUCK NO ˣ PLAYGROUND</title>
+    <title>FUCK NO</title>
     <link rel="stylesheet" href="index.css">
     <link rel="icon" type="image/x-icon" href="img/favicon_light.svg">
 </head>
@@ -22,5 +22,18 @@
     }
     setFavicon();
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setFavicon);
+
+    document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
+        document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
+
+        document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
+        document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
+
+        let titleIndex = 0;
+        const titles = ['FUCK NO', 'PLAYGROUND'];
+        setInterval(() => {
+            titleIndex = (titleIndex + 1) % titles.length;
+            document.title = titles[titleIndex];
+        }, 3000);
 </script>
 </html>
