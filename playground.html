@@ -7,23 +7,95 @@
     <link rel="stylesheet" href="index.css">
     <link rel="icon" type="image/x-icon" href="img/favicon_light.svg">
 </head>
+<body>
+    <div class="mobile-menu-overlay"></div>
+    
+    <div class="mobile-menu">
+        <div class="mobile-menu-item">
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/playground.html">Playground</a>
+            <div class="mobile-menu-line"></div>
+        </div>
+        <div class="mobile-menu-item">
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/gallery.html">Gallery</a>
+            <div class="mobile-menu-line"></div>
+        </div>
+        <div class="mobile-menu-item">
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html">About</a>
+            <div class="mobile-menu-line"></div>
+        </div>
+    </div>
+
+    <div class="marquee-container">
+        <img class="menu-icon" src="img/menu_light.svg" alt="Menu" draggable="false">
+        <a class="marquee-header" href="https://gab333t.github.io/fuckno/">FUCK NO</a>
+        <nav class="marquee-nav">
+            <a class="marquee-text selected" href="https://gab333t.github.io/fuckno/playground.html">Playground</a>
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/gallery.html">Gallery</a>
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html">About</a>
+        </nav>
+    </div>
+</body>
 <script>
-    function setFavicon() {
-        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const faviconPath = isDarkMode ? 'img/favicon_dark.svg' : 'img/favicon_light.svg';
+        function setFavicon() {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const faviconPath = isDarkMode ? 'img/favicon_dark.svg' : 'img/favicon_light.svg';
 
-        let favicon = document.querySelector("link[rel='icon']");
-        if (!favicon) {
-            favicon = document.createElement('link');
-            favicon.rel = 'icon';
-            document.head.appendChild(favicon);
+            let favicon = document.querySelector("link[rel='icon']");
+            if (!favicon) {
+                favicon = document.createElement('link');
+                favicon.rel = 'icon';
+                document.head.appendChild(favicon);
+            }
+            favicon.href = faviconPath;
         }
-        favicon.href = faviconPath;
-    }
-    setFavicon();
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setFavicon);
 
-    document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
+        function setMenuIcon(isMenuOpen = false) {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const menuIcon = document.querySelector('.menu-icon');
+            
+            if (isMenuOpen) {
+                menuIcon.src = isDarkMode ? 'img/menu_close_dark.svg' : 'img/menu_close_light.svg';
+            } else {
+                menuIcon.src = isDarkMode ? 'img/menu_dark.svg' : 'img/menu_light.svg';
+            }
+        }
+
+        function toggleMenu() {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const overlay = document.querySelector('.mobile-menu-overlay');
+            const isOpening = !mobileMenu.classList.contains('active');
+            
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            setMenuIcon(isOpening);
+        }
+
+        setFavicon();
+        setMenuIcon();
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            setFavicon();
+            const isMenuOpen = document.querySelector('.mobile-menu').classList.contains('active');
+            setMenuIcon(isMenuOpen);
+        });
+
+        function setSelectedStyle() {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const selected = document.querySelector('.selected');
+            if (selected) {
+                if (isDarkMode) {
+                    selected.style.backgroundColor = 'white';
+                    selected.style.color = 'black';
+                } else {
+                    selected.style.backgroundColor = 'black';
+                    selected.style.color = 'white';
+                }
+            }
+        }
+        setSelectedStyle();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setSelectedStyle);      
+
+        document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
         document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
 
         document.querySelector('.menu-icon').addEventListener('click', toggleMenu);

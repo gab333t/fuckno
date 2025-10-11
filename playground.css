@@ -1,0 +1,236 @@
+@font-face {
+    font-family: Articulate_Medium;
+    src: url("fonts/SBArticulateTest-Medium.otf") format("opentype");
+}
+
+@font-face {
+    font-family: Articulate_Black;
+    src: url("fonts/SBArticulateTest-Black.otf") format("opentype");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.marquee-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    padding: 4px 20px;
+    z-index: 1000;
+    border-bottom: 1.5px solid black;
+}
+
+.marquee-header {
+    font-family: Articulate_Black;
+    font-size: 42px;
+    letter-spacing: -3.5px;
+}
+
+.marquee-nav {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    left: 50%;
+    right: 20px;
+}
+
+.marquee-text {
+    font-family: Articulate_Medium;
+    font-weight: bold;
+    font-size: 20px;
+    letter-spacing: -0.25px;
+    padding: 4px 4px;
+    display: inline-block;
+}
+
+.marquee-text:hover {
+    background-color: black;
+    color: white;
+}
+
+.menu-icon {
+    display: none;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+}
+
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 250px;
+    height: 100vh;
+    z-index: 999;
+    transition: left 0.3s ease;
+    padding: 70px 0 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1.5px solid black;
+}
+
+.mobile-menu .marquee-text {
+    padding: 4px 20px 10px 20px;
+}
+
+.mobile-menu-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-menu-line {
+    width: 100%;
+    height: 1.5px;
+    background-color: black;
+}
+
+.mobile-menu.active {
+    left: 0;
+}
+
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.35);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.mobile-menu-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+@media (prefers-color-scheme: light) {
+    body {
+        background-color: white;
+    }
+    .marquee-container {
+        background-color: white;
+    }
+    .marquee-text, .marquee-header, a {
+        color: black;
+    }
+    .marquee-text:hover {
+        background-color: black;
+        color: white;
+    }
+
+    #playground {
+        background-color: white;
+        color: black;
+    }
+
+    .mobile-menu:hover .marquee-text:hover {
+        background-color: white;
+        color: black;
+    }
+
+    .mobile-menu {
+        background-color: white;
+        border-right: 1.5px solid black;
+    }
+
+    .mobile-menu-line {
+        background-color: black;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: black;
+    }
+
+    .marquee-container {
+        background-color: black;
+        border-bottom: 1.5px solid white;
+    }
+
+    .marquee-text, .marquee-header, a {
+        color: white;
+    }
+
+    .marquee-text:hover {
+        background-color: white;
+        color: black;
+    }
+
+    #playground {
+        background-color: black;
+        color: white;
+    }
+
+    .mobile-menu:hover .marquee-text:hover {
+        background-color: black;
+        color: white;
+    }
+
+    .mobile-menu {
+        background-color: black;
+        border-right: 1.5px solid white;
+        border-bottom: 1.5px solid white;
+    }
+
+    .mobile-menu-line {
+        background-color: white;
+    }
+
+    .mobile-menu-overlay {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+}
+
+@media (max-width: 480px) {
+    .marquee-container {
+        justify-content: center;
+        padding: 10px 50px;
+    }
+    
+    .marquee-text {
+        font-size: 18px;
+        letter-spacing: -0.25px;
+        margin-top: 4px;
+        margin-bottom: 4px;
+    }
+
+    .marquee-text:hover {
+        background-color: none;
+    }
+
+    .marquee-header {
+        font-size: 34px;
+        letter-spacing: -2.5px;
+        position: static;
+    }
+
+    .marquee-nav {
+        display: none;
+    }
+
+    .menu-icon {
+        display: block;
+        position: absolute;
+        left: 20px;
+    }
+}
+
+body {
+    padding-top: 70px;
+}
