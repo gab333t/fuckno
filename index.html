@@ -71,6 +71,11 @@
             setMenuIcon(isOpening);
         }
 
+                if (!isOpening) {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.body.style.backgroundColor = isDarkMode ? 'black' : 'white';
+        }
+
         setFavicon();
         setMenuIcon();
         
