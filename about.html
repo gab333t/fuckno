@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FUCK NO</title>
-    <link rel="stylesheet" href="about.css">
+    <link rel="stylesheet" href="inventory.css">
     <link rel="icon" type="image/x-icon" href="img/favicon_light.svg">
 </head>
 <body>
-
     <div class="mobile-menu-overlay"></div>
     
     <div class="mobile-menu">
@@ -31,14 +30,12 @@
         <a class="marquee-header" href="https://gab333t.github.io/fuckno/">FUCK NO</a>
         <nav class="marquee-nav">
             <a class="marquee-text" href="https://gab333t.github.io/fuckno/rageroom.html">Rage Room</a>
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/inventory.html">Inventory</a>
-            <a class="marquee-text selected" href="https://gab333t.github.io/fuckno/about.html">About</a>
+            <a class="marquee-text selected" href="https://gab333t.github.io/fuckno/inventory.html">Inventory</a>
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html">About</a>
         </nav>
-    </div>    
+    </div>
 
-    <h2 class="body-text">FUCK NO is a interactive site that lets you vent out your frustration when you're told NO. Rather than complying to authority, you take on the role of someone who address it head-on.</h2>
-    <h2 class="body-text">Credits<br>Font is Articulate by Studio Sascha Benta<br>Sounds provided by Pixbay</h2>
-
+    
 </body>
 <script>
         function setFavicon() {
@@ -107,9 +104,10 @@
         document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
 
         let titleIndex = 0;
-        const titles = ['FUCK NO', 'ABOUT'];
+        const titles = ['FUCK NO', 'INVENTORY'];
         setInterval(() => {
             titleIndex = (titleIndex + 1) % titles.length;
             document.title = titles[titleIndex];
         }, 3000);
 </script>
+</html>

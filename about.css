@@ -123,12 +123,6 @@ a {
     color: inherit;
 }
 
-.body-text {
-    font-family: Articulate_Regular;
-    font-size: 20px;
-    padding-left: 20px;
-}
-
 @media (prefers-color-scheme: light) {
     body {
         background-color: white;
@@ -156,10 +150,6 @@ a {
 
     .mobile-menu-line {
         background-color: black;
-    }
-
-    .body-text {
-        color: black;
     }
 }
 
@@ -200,11 +190,6 @@ a {
     .mobile-menu-overlay {
         background-color: rgba(255, 255, 255, 0.15);
     }
-
-    .body-text {
-        color: white;
-    }
-
 }
 
 @media (max-width: 480px) {
@@ -238,14 +223,6 @@ a {
         display: block;
         position: absolute;
         left: 20px;
-    }
-
-    .body-text {
-        font-size: 17px;
-        letter-spacing: -0.25px;
-        line-height: 24px;
-        padding-left: 20px;
-        padding-right: 20px;
     }
 }
 

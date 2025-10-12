@@ -34,6 +34,9 @@
             <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html">About</a>
         </nav>
     </div>
+
+    <div class="inventory-grid"></div>
+    
 </body>
 <script>
         function setFavicon() {
@@ -107,5 +110,36 @@
             titleIndex = (titleIndex + 1) % titles.length;
             document.title = titles[titleIndex];
         }, 3000);
+
+        function createInventoryGrid() {
+            const grid = document.querySelector('.inventory-grid');
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = isDarkMode ? 'dark' : 'light';
+            
+            for (let i = 1; i <= 75; i++) {
+                const imgElement = document.createElement('img');
+                imgElement.src = `img/no${i}_${theme}.webp`;
+                imgElement.alt = `Inventory item ${i}`;
+                imgElement.className = 'inventory-item';
+                imgElement.draggable = false;
+                imgElement.loading = 'lazy';
+                imgElement.dataset.number = i;
+                grid.appendChild(imgElement);
+            }
+        }
+
+        function updateInventoryImages() {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = isDarkMode ? 'dark' : 'light';
+            const images = document.querySelectorAll('.inventory-item');
+            
+            images.forEach(img => {
+                const number = img.dataset.number;
+                img.src = `img/no${number}_${theme}.webp`;
+            });
+        }
+
+        createInventoryGrid();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateInventoryImages);
 </script>
 </html>
