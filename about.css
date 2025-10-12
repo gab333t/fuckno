@@ -1,4 +1,9 @@
 @font-face {
+    font-family: Articulate_Regular;
+    src: url("fonts/SBArticulateTest-Regular.otf") format("opentype");
+}
+
+@font-face {
     font-family: Articulate_Medium;
     src: url("fonts/SBArticulateTest-Medium.otf") format("opentype");
 }
@@ -119,10 +124,9 @@ a {
 }
 
 .body-text {
-    font-family: Articulate_Medium;
+    font-family: Articulate_Regular;
     font-size: 20px;
     padding-left: 20px;
-    
 }
 
 @media (prefers-color-scheme: light) {
@@ -237,8 +241,8 @@ a {
     }
 
     .body-text {
-        font-size: 18px;
-        letter-spacing: -0.1px;
+        font-size: 17px;
+        letter-spacing: 0.25px;
         line-height: 24px;
         padding-left: 20px;
         padding-right: 20px;
