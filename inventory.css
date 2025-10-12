@@ -129,6 +129,7 @@ a {
     }
     .marquee-container {
         background-color: white;
+        border-bottom: 1.5px solid black;
     }
     .marquee-text, .marquee-header, a {
         color: black;
@@ -150,6 +151,15 @@ a {
 
     .mobile-menu-line {
         background-color: black;
+    }
+
+    .inventory-grid {
+        border-left: 1.5px solid black;
+    }
+
+    .inventory-item {
+        border-right: 1.5px solid black;
+        border-bottom: 1.5px solid black;
     }
 }
 
@@ -190,9 +200,18 @@ a {
     .mobile-menu-overlay {
         background-color: rgba(255, 255, 255, 0.15);
     }
+
+    .inventory-grid {
+        border-left: 1.5px solid white;
+    }
+
+    .inventory-item {
+        border-right: 1.5px solid white;
+        border-bottom: 1.5px solid white;
+    }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 550px) {
     .marquee-container {
         justify-content: center;
         padding: 10px 50px;
@@ -233,30 +252,32 @@ body {
 .inventory-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    padding: 40px 20px;
-    max-width: 1400px;
-    margin: 0 auto;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    margin-top: -10px;
 }
 
 .inventory-item {
     width: 100%;
-    max-width: 300px;
     height: auto;
     display: block;
     object-fit: cover;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    padding: 30px;
+    box-sizing: border-box;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 550px) {
     .inventory-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        padding: 20px 10px;
+        gap: 0;
+        padding: 0;
     }
     
     .inventory-item {
-        max-width: 200px;
+        padding: 20px;
     }
 }
