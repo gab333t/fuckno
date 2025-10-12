@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FUCK NO</title>
-    <link rel="stylesheet" href="playground.css">
+    <link rel="stylesheet" href="inventory.css">
     <link rel="icon" type="image/x-icon" href="img/favicon_light.svg">
 </head>
 <body>
@@ -12,11 +12,11 @@
     
     <div class="mobile-menu">
         <div class="mobile-menu-item">
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/playground.html">Playground</a>
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/rageroom.html">Rage Room</a>
             <div class="mobile-menu-line"></div>
         </div>
         <div class="mobile-menu-item">
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/gallery.html">Gallery</a>
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/inventory.html">Inventory</a>
             <div class="mobile-menu-line"></div>
         </div>
         <div class="mobile-menu-item">
@@ -29,8 +29,8 @@
         <img class="menu-icon" src="img/menu_light.svg" alt="Menu" draggable="false">
         <a class="marquee-header" href="https://gab333t.github.io/fuckno/">FUCK NO</a>
         <nav class="marquee-nav">
-            <a class="marquee-text selected" href="https://gab333t.github.io/fuckno/playground.html">Playground</a>
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/gallery.html">Gallery</a>
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/rageroom.html">Rage Room</a>
+            <a class="marquee-text selected" href="https://gab333t.github.io/fuckno/inventory.html">Inventory</a>
             <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html">About</a>
         </nav>
     </div>
@@ -102,7 +102,7 @@
         document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
 
         let titleIndex = 0;
-        const titles = ['FUCK NO', 'PLAYGROUND'];
+        const titles = ['FUCK NO', 'INVENTORY'];
         setInterval(() => {
             titleIndex = (titleIndex + 1) % titles.length;
             document.title = titles[titleIndex];
