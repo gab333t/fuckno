@@ -121,7 +121,6 @@ a {
 .body-text {
     font-family: Articulate_Medium;
     font-size: 20px;
-    letter-spacing: -0.25px;
     padding-left: 20px;
     
 }
@@ -239,6 +238,10 @@ a {
 
     .body-text {
         font-size: 18px;
+        letter-spacing: -0.1px;
+        line-height: 24px;
+        padding-left: 20px;
+        padding-right: 20px;
     }
 }
 
