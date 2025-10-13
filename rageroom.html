@@ -15,7 +15,20 @@
         </nav>
     </div>
 
-    <h2 class="body-text">SELECT YOUR TOOL.</h2>
+    <h2 class="body-text">Select your tool.</h2>
+    <div class="tool-container">
+        <img src="img/rock.webp" alt="Rock icon.">
+        <img src="img/sledgehammer.webp" alt="Sledgehammer icon.">
+        <img src="img/dynamite.webp" alt="Dynamite icon.">
+    </div>
+
+    <div class="bottom-marquee-container">
+        <div class="bottom-marquee">
+            <span class="marquee-content">RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM</span>
+            <span class="marquee-content">RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM RAGE ROOM</span>
+        </div>
+    </div>
+
 
     
 <script>
@@ -60,6 +73,30 @@ setInterval(() => {
     titleIndex = (titleIndex + 1) % titles.length;
     document.title = titles[titleIndex];
 }, 3000);
+
+const toolImages = document.querySelectorAll('.tool-container img');
+
+toolImages.forEach(img => {
+    const originalSrc = img.src;
+    const altText = img.alt;
+    
+    img.addEventListener('mouseenter', () => {
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const mode = isDarkMode ? 'dark' : 'light';
+        
+        if (altText.includes('Sledgehammer')) {
+            img.src = `img/sledgehammer_${mode}.webp`;
+        } else if (altText.includes('Dynamite')) {
+            img.src = `img/dynamite_${mode}.webp`;
+        } else if (altText.includes('Rock')) {
+            img.src = `img/rock_${mode}.webp`;
+        }
+    });
+    
+    img.addEventListener('mouseleave', () => {
+        img.src = originalSrc;
+    });
+});
 </script>
 </body>
 </html>
