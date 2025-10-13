@@ -161,19 +161,33 @@ function createInventoryGrid() {
     const grid = document.querySelector('.inventory-grid');
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
+    const invertedTheme = isDarkMode ? 'light' : 'dark';
     
     for (let i = 1; i <= 76; i++) {
         const containerElement = document.createElement('div');
         containerElement.className = 'inventory-item-container';
         
+        // Create wrapper for image layering
+        const imgWrapper = document.createElement('div');
+        imgWrapper.className = 'inventory-item-wrapper';
+        imgWrapper.dataset.number = i;
+        
+        // Create both theme versions
         const imgElement = document.createElement('img');
         imgElement.src = `img/no${i}_${theme}.webp`;
         imgElement.alt = `Inventory item ${i}`;
-        imgElement.className = 'inventory-item';
+        imgElement.className = 'inventory-item inventory-item-normal';
         imgElement.draggable = false;
-        imgElement.loading = 'lazy';
         imgElement.dataset.number = i;
-        imgElement.addEventListener('click', (e) => {
+        
+        const imgElementInverted = document.createElement('img');
+        imgElementInverted.src = `img/no${i}_${invertedTheme}.webp`;
+        imgElementInverted.alt = `Inventory item ${i}`;
+        imgElementInverted.className = 'inventory-item inventory-item-inverted';
+        imgElementInverted.draggable = false;
+        imgElementInverted.dataset.number = i;
+        
+        imgWrapper.addEventListener('click', (e) => {
             const checkbox = containerElement.querySelector('.checkbox-icon');
             toggleCheckbox(checkbox);
         });
@@ -195,7 +209,9 @@ function createInventoryGrid() {
         labelElement.textContent = labels[i - 1];
         labelElement.dataset.number = i;
         
-        containerElement.appendChild(imgElement);
+        imgWrapper.appendChild(imgElement);
+        imgWrapper.appendChild(imgElementInverted);
+        containerElement.appendChild(imgWrapper);
         containerElement.appendChild(checkboxElement);
         containerElement.appendChild(labelElement);
         grid.appendChild(containerElement);
@@ -243,7 +259,7 @@ function toggleCheckbox(checkboxElement) {
     
     const labelElement = document.querySelector(`.small-text[data-number="${number}"]`);
     const containerElement = checkboxElement.closest('.inventory-item-container');
-    const imgElement = containerElement.querySelector('.inventory-item');
+    const imgWrapper = containerElement.querySelector('.inventory-item-wrapper');
     
     if (isChecked) {
         checkboxElement.src = `img/checkbox_${theme}.svg`;
@@ -254,8 +270,8 @@ function toggleCheckbox(checkboxElement) {
         if (containerElement) {
             containerElement.classList.remove('checked');
         }
-        if (imgElement) {
-            imgElement.src = `img/no${number}_${theme}.webp`;
+        if (imgWrapper) {
+            imgWrapper.classList.remove('inverted');
         }
         updatePickButton();
     } else {
@@ -267,9 +283,8 @@ function toggleCheckbox(checkboxElement) {
         if (containerElement) {
             containerElement.classList.add('checked');
         }
-        const invertedTheme = isDarkMode ? 'light' : 'dark';
-        if (imgElement) {
-            imgElement.src = `img/no${number}_${invertedTheme}.webp`;
+        if (imgWrapper) {
+            imgWrapper.classList.add('inverted');
         }
         showTargetFeedback(number);
     }
@@ -279,15 +294,16 @@ function updateInventoryImages() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
     const invertedTheme = isDarkMode ? 'light' : 'dark';
-    const images = document.querySelectorAll('.inventory-item');
+    const wrappers = document.querySelectorAll('.inventory-item-wrapper');
     const checkboxes = document.querySelectorAll('.checkbox-icon');
     
-    images.forEach(img => {
-        const number = img.dataset.number;
-        const checkbox = document.querySelector(`.checkbox-icon[data-number="${number}"]`);
-        const isChecked = checkbox && checkbox.dataset.checked === 'true';
+    wrappers.forEach(wrapper => {
+        const number = wrapper.dataset.number;
+        const normalImg = wrapper.querySelector('.inventory-item-normal');
+        const invertedImg = wrapper.querySelector('.inventory-item-inverted');
         
-        img.src = `img/no${number}_${isChecked ? invertedTheme : theme}.webp`;
+        normalImg.src = `img/no${number}_${theme}.webp`;
+        invertedImg.src = `img/no${number}_${invertedTheme}.webp`;
     });
     
     checkboxes.forEach(checkbox => {
@@ -304,7 +320,6 @@ function selectAllItems() {
     const checkboxes = document.querySelectorAll('.checkbox-icon');
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
-    const invertedTheme = isDarkMode ? 'light' : 'dark';
     const pickButton = document.getElementById('pick-button');
     let anyNewlyChecked = false;
     
@@ -316,7 +331,7 @@ function selectAllItems() {
             anyNewlyChecked = true;
             const labelElement = document.querySelector(`.small-text[data-number="${number}"]`);
             const containerElement = checkbox.closest('.inventory-item-container');
-            const imgElement = containerElement.querySelector('.inventory-item');
+            const imgWrapper = containerElement.querySelector('.inventory-item-wrapper');
             
             checkbox.src = `img/checkbox_check_${theme}.svg`;
             checkbox.dataset.checked = 'true';
@@ -327,8 +342,8 @@ function selectAllItems() {
             if (containerElement) {
                 containerElement.classList.add('checked');
             }
-            if (imgElement) {
-                imgElement.src = `img/no${number}_${invertedTheme}.webp`;
+            if (imgWrapper) {
+                imgWrapper.classList.add('inverted');
             }
         }
     });
