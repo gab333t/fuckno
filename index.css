@@ -103,40 +103,14 @@ body.no-scroll {
     position: relative;
 }
 
-.inventory-item-wrapper {
-    position: relative;
-    width: 70%;
-    cursor: pointer;
-}
-
 .inventory-item {
-    width: 100%;
+    width: 70%;
     height: auto;
     display: block;
     object-fit: cover;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
-    position: absolute;
-    top: 0;
-    left: 0;
-    transition: opacity 0.05s ease;
-}
-
-.inventory-item-normal {
-    position: relative;
-    opacity: 1;
-}
-
-.inventory-item-inverted {
-    opacity: 0;
-}
-
-.inventory-item-wrapper.inverted .inventory-item-normal {
-    opacity: 0;
-}
-
-.inventory-item-wrapper.inverted .inventory-item-inverted {
-    opacity: 1;
+    cursor: pointer;
 }
 
 .checkbox-icon {
@@ -398,7 +372,7 @@ em {
     }
 
     .small-text {
-        font-size: 2vw;
+        font-size: 2.5vw;
         margin-top: 4vw;
     }
 
