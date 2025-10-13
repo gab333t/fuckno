@@ -78,8 +78,36 @@ function createInventoryGrid() {
         imgElement.dataset.number = i;
         imgElement.addEventListener('click', () => openImageModal(i, theme));
         
+        const checkboxElement = document.createElement('img');
+        checkboxElement.src = `img/checkbox_${theme}.svg`;
+        checkboxElement.alt = 'Checkbox';
+        checkboxElement.className = 'checkbox-icon';
+        checkboxElement.draggable = false;
+        checkboxElement.dataset.number = i;
+        checkboxElement.dataset.checked = 'false';
+        checkboxElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleCheckbox(checkboxElement);
+        });
+        
         containerElement.appendChild(imgElement);
+        containerElement.appendChild(checkboxElement);
         grid.appendChild(containerElement);
+    }
+}
+
+function toggleCheckbox(checkboxElement) {
+    const number = checkboxElement.dataset.number;
+    const isChecked = checkboxElement.dataset.checked === 'true';
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = isDarkMode ? 'dark' : 'light';
+    
+    if (isChecked) {
+        checkboxElement.src = `img/checkbox_${theme}.svg`;
+        checkboxElement.dataset.checked = 'false';
+    } else {
+        checkboxElement.src = `img/checkbox_check_${theme}.svg`;
+        checkboxElement.dataset.checked = 'true';
     }
 }
 
@@ -87,10 +115,20 @@ function updateInventoryImages() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
     const images = document.querySelectorAll('.inventory-item');
+    const checkboxes = document.querySelectorAll('.checkbox-icon');
     
     images.forEach(img => {
         const number = img.dataset.number;
         img.src = `img/no${number}_${theme}.webp`;
+    });
+    
+    checkboxes.forEach(checkbox => {
+        const isChecked = checkbox.dataset.checked === 'true';
+        if (isChecked) {
+            checkbox.src = `img/checkbox_check_${theme}.svg`;
+        } else {
+            checkbox.src = `img/checkbox_${theme}.svg`;
+        }
     });
 }
 
