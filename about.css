@@ -51,11 +51,6 @@
     display: inline-block;
 }
 
-.marquee-text:hover {
-    background-color: black;
-    color: white;
-}
-
 .about-icon {
     height: 20px;
     width: auto;
@@ -68,6 +63,9 @@
     font-size: 20px;
     margin-left: 20px;
     letter-spacing: -0.25px;
+    max-width: 50vw;
+    text-align: left;
+    text-indent: 2em;    
 }
 
 .menu-icon {
@@ -91,10 +89,10 @@ body {
         background-color: white;
         border-bottom: 1.5px solid black;
     }
-    .marquee-text, .marquee-header, a {
+    .marquee-header, .body-text, a {
         color: black;
     }
-    .marquee-text:hover {
+    .marquee-text {
         background-color: black;
         color: white;
     }
@@ -110,11 +108,11 @@ body {
         border-bottom: 1.5px solid white;
     }
 
-    .marquee-text, .marquee-header, a {
+    .marquee-header, .body-text, a {
         color: white;
     }
 
-    .marquee-text:hover {
+    .marquee-text {
         background-color: white;
         color: black;
     }
