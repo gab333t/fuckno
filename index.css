@@ -44,7 +44,6 @@
 
 .marquee-text {
     font-family: Articulate_Medium;
-    font-weight: bold;
     font-size: 20px;
     letter-spacing: -0.25px;
     padding: 4px 4px;
@@ -107,6 +106,7 @@ body.no-scroll {
     object-fit: cover;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    cursor: pointer;
 }
 
 .checkbox-icon {
@@ -129,6 +129,33 @@ body.no-scroll {
     word-break: break-all;
     text-align: center;
     max-width: 100%;
+}
+
+.button-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    gap: 20px;
+}
+
+.button-text {
+    font-family: Articulate_Medium;
+    font-size: 20px;
+    letter-spacing: -0.25px;
+    background-color: black;
+    color: white;
+    padding: 8px 16px;
+    margin: 0;
+    position: relative;
+    cursor: pointer;
+}
+
+.button-text.disabled {
+    background-color: gray;
+    cursor: not-allowed;
 }
 
 @media (prefers-color-scheme: light) {
@@ -170,6 +197,12 @@ body.no-scroll {
     .small-text.checked {
         color: black;
         background-color: white;
+    }
+
+    .button-text {
+        border: 1.5px solid white;
+        background-color: black;
+        color: white;
     }
 }
 
@@ -219,6 +252,12 @@ body.no-scroll {
     .small-text.checked {
         color: white;
         background-color: black;
+    }
+
+    .button-text {
+        border: 1.5px solid black;
+        background-color: white;
+        color: black;
     }
 }
 

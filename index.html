@@ -21,6 +21,11 @@
     <div class="image-modal">
         <img class="image-modal-img" src="" alt="">
     </div>
+
+    <div class="button-container">
+        <h2 class="button-text disabled" id="pick-button">PICK BEFORE YOU RAGE</h2>
+        <h2 class="button-text" id="select-all-button">SELECT ALL</h2>
+    </div>
     
 <script>
 const labels = [
@@ -189,6 +194,19 @@ function createInventoryGrid() {
     }
 }
 
+function updatePickButton() {
+    const pickButton = document.getElementById('pick-button');
+    const anyChecked = document.querySelector('.checkbox-icon[data-checked="true"]');
+    
+    if (anyChecked) {
+        pickButton.textContent = 'PROCEED TO RAGE ROOM';
+        pickButton.classList.remove('disabled');
+    } else {
+        pickButton.textContent = 'PICK BEFORE YOU RAGE';
+        pickButton.classList.add('disabled');
+    }
+}
+
 function toggleCheckbox(checkboxElement) {
     const number = checkboxElement.dataset.number;
     const isChecked = checkboxElement.dataset.checked === 'true';
@@ -225,6 +243,8 @@ function toggleCheckbox(checkboxElement) {
             imgElement.src = `img/no${number}_${invertedTheme}.webp`;
         }
     }
+    
+    updatePickButton();
 }
 
 function updateInventoryImages() {
@@ -252,8 +272,43 @@ function updateInventoryImages() {
     });
 }
 
+function selectAllItems() {
+    const checkboxes = document.querySelectorAll('.checkbox-icon');
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = isDarkMode ? 'dark' : 'light';
+    const invertedTheme = isDarkMode ? 'light' : 'dark';
+    
+    checkboxes.forEach(checkbox => {
+        const number = checkbox.dataset.number;
+        const isChecked = checkbox.dataset.checked === 'true';
+        
+        if (!isChecked) {
+            const labelElement = document.querySelector(`.small-text[data-number="${number}"]`);
+            const containerElement = checkbox.closest('.inventory-item-container');
+            const imgElement = containerElement.querySelector('.inventory-item');
+            
+            checkbox.src = `img/checkbox_check_${theme}.svg`;
+            checkbox.dataset.checked = 'true';
+            
+            if (labelElement) {
+                labelElement.classList.add('checked');
+            }
+            if (containerElement) {
+                containerElement.classList.add('checked');
+            }
+            if (imgElement) {
+                imgElement.src = `img/no${number}_${invertedTheme}.webp`;
+            }
+        }
+    });
+    
+    updatePickButton();
+}
+
 createInventoryGrid();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateInventoryImages);
+
+document.getElementById('select-all-button').addEventListener('click', selectAllItems);
 
 function openImageModal(number, theme) {
     const modal = document.querySelector('.image-modal');
