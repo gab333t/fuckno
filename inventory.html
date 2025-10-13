@@ -37,6 +37,12 @@
 
     <div class="inventory-grid"></div>
     
+    <div class="image-modal-overlay"></div>
+    <img class="image-modal-close" src="img/menu_close_light.svg" alt="Close" draggable="false">
+    <div class="image-modal">
+        <img class="image-modal-img" src="" alt="">
+    </div>
+    
 </body>
 <script>
         function setFavicon() {
@@ -101,9 +107,6 @@
         document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
         document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
 
-        document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
-        document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
-
         let titleIndex = 0;
         const titles = ['FUCK NO', 'INVENTORY'];
         setInterval(() => {
@@ -124,6 +127,7 @@
                 imgElement.draggable = false;
                 imgElement.loading = 'lazy';
                 imgElement.dataset.number = i;
+                imgElement.addEventListener('click', () => openImageModal(i, theme));
                 grid.appendChild(imgElement);
             }
         }
@@ -141,5 +145,36 @@
 
         createInventoryGrid();
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateInventoryImages);
+
+        function openImageModal(number, theme) {
+            const modal = document.querySelector('.image-modal');
+            const overlay = document.querySelector('.image-modal-overlay');
+            const modalImg = document.querySelector('.image-modal-img');
+            const closeIcon = document.querySelector('.image-modal-close');
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            modalImg.src = `img/no${number}_${theme}.webp`;
+            modalImg.alt = `Inventory item ${number}`;
+            closeIcon.src = isDarkMode ? 'img/menu_close_dark.svg' : 'img/menu_close_light.svg';
+            
+            modal.classList.add('active');
+            overlay.classList.add('active');
+            closeIcon.classList.add('active');
+            document.body.classList.add('no-scroll');
+        }
+
+        function closeImageModal() {
+            const modal = document.querySelector('.image-modal');
+            const overlay = document.querySelector('.image-modal-overlay');
+            const closeIcon = document.querySelector('.image-modal-close');
+            
+            modal.classList.remove('active');
+            overlay.classList.remove('active');
+            closeIcon.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        }
+
+        document.querySelector('.image-modal-overlay').addEventListener('click', closeImageModal);
+        document.querySelector('.image-modal-close').addEventListener('click', closeImageModal);
 </script>
 </html>
