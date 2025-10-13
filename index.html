@@ -17,7 +17,91 @@
 
     <div class="inventory-grid"></div>
     
+    <div class="image-modal-overlay"></div>
+    <div class="image-modal">
+        <img class="image-modal-img" src="" alt="">
+    </div>
+    
 <script>
+const labels = [
+    '[01] PARKING24HR',
+    '[02] STANDINGFORCONSTRUCTION',
+    '[03] BLOCKDRIVEWAY',
+    '04_SMOKING',
+    '05_ELEVATOR_ICOFIRE',
+    '06_DANGERSMOKING',
+    '07_DANGERENTER',
+    '08_STANDING+PARKING',
+    '09_ENTER',
+    '10_EATDRINKSMOKE',
+    '11_ENTERCROSSTRACK',
+    '12_DUMPING',
+    '13_FLYERSMENUSADVERTISEMENTS',
+    '14_UNSOLICITEDADVERTISEMENTS',
+    '15_DUMPINGFINE500',
+    '16_SOLICITINGOREXCEPTIONS',
+    '17_TRESPASSORPROSECUTE',
+    '18_PARKORTOWED',
+    '19_STEALMYRECYCLING',
+    '20_BLOCKDRIVEWAY',
+    '21_TRESPASS',
+    '22_TRESPASSONPROPERTY',
+    '23_THRUTRAFFIC4HOSPITAL',
+    '24_SMOKE25FT',
+    '25_BLOCKSTAIRB',
+    '26_BLOCKFIREEXIT',
+    '27_SMOKING',
+    '28_DUMPANDGETPROSECUTED',
+    '29_SMOKEVAPEECIG',
+    '30_STANDUNDERLIFTS',
+    '31_TRESPASS',
+    '32_PARKINGFORCONSTRUCTION',
+    '33_SOLICITINGLOITERINGTRESPASSING',
+    '34_BLOCKLOADINGDOCK',
+    '35_PARKSTANDONPRIVATEST',
+    '36_PARKACTIVECROSSING',
+    '37_OUTSIDEFOODBEV',
+    '38_OVERFIIIIILL',
+    '39_PPLONLYOPERATOR',
+    '40_EXITXXXXXX',
+    '41_CHILDRENONCART',
+    '42_TOUCHTHANKS',
+    '43_ENTERROOMRUN',
+    '44_ENTER',
+    '45_COMMERCIALTRAFFIC',
+    '46_PUBLICRESTROMCUSTOMERSONLY',
+    '47_LOCKBIKESORCUT',
+    '48_CHAINBIKE2FENCE',
+    '49_TOBACCOVAPE4UNDER21',
+    '50_FLYERSADMENUSPLS',
+    '51_SMOKINGDURINGFUELING',
+    '52_DUMPINGBYMTA',
+    '53_HOUSEHOLDORBUSINESSTRASH',
+    '54_IDLINGENGINE',
+    '55_PARKINGBYFDNY',
+    '56_ENTRYORMAYBEYES',
+    '57_HOODIESSKIMASKSBANDANAS',
+    '58_DOGORBIKEINSTORE',
+    '59_TRESPASSING',
+    '60_BLOCKINGPLSANDTHANKS',
+    '61_LITTER4CHURCH',
+    '62_BALLPLAYING',
+    '63_OURLAUNDRYINOURMACHINES',
+    '64_TRESPASSINGORPROSECUTED',
+    '65_TRESPASSINGONOURPROPERTY',
+    '66_STUPIDPPL',
+    '67_MOPEDSANDATVS',
+    '68_POSTINGBILLS',
+    '69_CLIMBING',
+    '70_RIDINGINPORTAUTHORITY',
+    '71_ENTERBUTDELIVERIESROK',
+    '72_SOLICITLOITERORTRESPASS',
+    '73_BIKINGINFLATIRON',
+    '74_SHOESINDRYERS',
+    '75_BUYORSELLEBT',
+    '76_SMOKINGBYPUFFIN'
+];
+
 function setFavicon() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const faviconPath = isDarkMode ? 'img/favicon_dark.svg' : 'img/favicon_light.svg';
@@ -39,7 +123,7 @@ function updateAboutText() {
         const imagePath = isDarkMode ? 'img/about_dark.svg' : 'img/about_light.svg';
         aboutLink.innerHTML = `<img src="${imagePath}" alt="About" class="about-icon" draggable="false">`;
     } else {
-        aboutLink.textContent = 'About';
+        aboutLink.textContent = 'ABOUT';
     }
 }
 
@@ -76,7 +160,10 @@ function createInventoryGrid() {
         imgElement.draggable = false;
         imgElement.loading = 'lazy';
         imgElement.dataset.number = i;
-        imgElement.addEventListener('click', () => openImageModal(i, theme));
+        imgElement.addEventListener('click', (e) => {
+            const checkbox = containerElement.querySelector('.checkbox-icon');
+            toggleCheckbox(checkbox);
+        });
         
         const checkboxElement = document.createElement('img');
         checkboxElement.src = `img/checkbox_${theme}.svg`;
@@ -90,8 +177,14 @@ function createInventoryGrid() {
             toggleCheckbox(checkboxElement);
         });
         
+        const labelElement = document.createElement('h3');
+        labelElement.className = 'small-text';
+        labelElement.textContent = labels[i - 1];
+        labelElement.dataset.number = i;
+        
         containerElement.appendChild(imgElement);
         containerElement.appendChild(checkboxElement);
+        containerElement.appendChild(labelElement);
         grid.appendChild(containerElement);
     }
 }
@@ -102,24 +195,51 @@ function toggleCheckbox(checkboxElement) {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
     
+    const labelElement = document.querySelector(`.small-text[data-number="${number}"]`);
+    const containerElement = checkboxElement.closest('.inventory-item-container');
+    const imgElement = containerElement.querySelector('.inventory-item');
+    
     if (isChecked) {
         checkboxElement.src = `img/checkbox_${theme}.svg`;
         checkboxElement.dataset.checked = 'false';
+        if (labelElement) {
+            labelElement.classList.remove('checked');
+        }
+        if (containerElement) {
+            containerElement.classList.remove('checked');
+        }
+        if (imgElement) {
+            imgElement.src = `img/no${number}_${theme}.webp`;
+        }
     } else {
         checkboxElement.src = `img/checkbox_check_${theme}.svg`;
         checkboxElement.dataset.checked = 'true';
+        if (labelElement) {
+            labelElement.classList.add('checked');
+        }
+        if (containerElement) {
+            containerElement.classList.add('checked');
+        }
+        const invertedTheme = isDarkMode ? 'light' : 'dark';
+        if (imgElement) {
+            imgElement.src = `img/no${number}_${invertedTheme}.webp`;
+        }
     }
 }
 
 function updateInventoryImages() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
+    const invertedTheme = isDarkMode ? 'light' : 'dark';
     const images = document.querySelectorAll('.inventory-item');
     const checkboxes = document.querySelectorAll('.checkbox-icon');
     
     images.forEach(img => {
         const number = img.dataset.number;
-        img.src = `img/no${number}_${theme}.webp`;
+        const checkbox = document.querySelector(`.checkbox-icon[data-number="${number}"]`);
+        const isChecked = checkbox && checkbox.dataset.checked === 'true';
+        
+        img.src = `img/no${number}_${isChecked ? invertedTheme : theme}.webp`;
     });
     
     checkboxes.forEach(checkbox => {

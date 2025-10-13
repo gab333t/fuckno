@@ -19,11 +19,11 @@
       }
     </style>
   </defs>
-  <g id="Layer_2">
+  <g id="Layer_2" class="st2">
     <rect class="st1" width="300" height="300"/>
   </g>
-  <g id="Layer_1" class="st2">
-    <path class="st1" d="M285,15v270H15V15h270M300,0H0v300h300V0h0Z"/>
+  <g id="Layer_1">
+    <path d="M285,15v270H15V15h270M300,0H0v300h300V0h0Z"/>
   </g>
   <g id="Layer_3">
     <line class="st0" y1="300" x2="300"/>

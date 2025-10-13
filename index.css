@@ -91,16 +91,17 @@ body.no-scroll {
 }
 
 .inventory-item-container {
-    padding: 60px;
+    padding: 40px 20px;
     box-sizing: border-box;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
 }
 
 .inventory-item {
-    width: 100%;
+    width: 70%;
     height: auto;
     display: block;
     object-fit: cover;
@@ -116,6 +117,18 @@ body.no-scroll {
     height: 24px;
     cursor: pointer;
     z-index: 10;
+}
+
+.small-text {
+    font-family: Articulate_Medium;
+    font-size: 12px;
+    letter-spacing: -0.25px;
+    display: inline-block;
+    padding: 2px 4px;
+    margin-top: 30px;
+    word-break: break-all;
+    text-align: center;
+    max-width: 100%;
 }
 
 @media (prefers-color-scheme: light) {
@@ -141,6 +154,22 @@ body.no-scroll {
     .inventory-item-container {
         border-right: 1.5px solid black;
         border-bottom: 1.5px solid black;
+    }
+    
+    .inventory-item-container.checked {
+        background-color: black;
+        border-right: 1.5px solid white;
+        border-bottom: 1.5px solid white;
+    }
+
+    .small-text {
+        color: black;
+        background-color: transparent;
+    }
+    
+    .small-text.checked {
+        color: black;
+        background-color: white;
     }
 }
 
@@ -172,14 +201,34 @@ body.no-scroll {
         border-bottom: 1.5px solid white;
     }
     
+    .inventory-item-container.checked {
+        background-color: white;
+        border-right: 1.5px solid black !important;
+        border-bottom: 1.5px solid black !important;
+    }
+    
     .image-modal-overlay {
+        background-color: black;
+    }
+
+    .small-text {
+        color: white;
+        background-color: transparent;
+    }
+    
+    .small-text.checked {
+        color: white;
         background-color: black;
     }
 }
 
 @media (max-width: 1000px) {
     .inventory-item-container {
-        padding: 30px;
+        padding: 20px 15px;
+    }
+    
+    .small-text {
+        font-size: 10px;
     }
 }
 
@@ -206,7 +255,7 @@ body.no-scroll {
     }
     
     .inventory-item-container {
-        padding: 35px;
+        padding: 20px 10px;
     }
 
     .image-modal-overlay {
@@ -222,7 +271,12 @@ body.no-scroll {
     .checkbox-icon {
         width: 20px;
         height: 20px;
-        top: 10px;
-        right: 10px;
+        top: 0;
+        right: 0;
+    }
+    
+    .small-text {
+        font-size: 9px;
+        padding: 1px 3px;
     }
 }
