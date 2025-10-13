@@ -11,15 +11,21 @@
     <div class="marquee-container">
         <a class="marquee-header" href="https://gab333t.github.io/fuckno/">FUCK NO</a>
         <nav class="marquee-nav">
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html"></a>
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html">ABOUT</a>
         </nav>
     </div>
 
     <div class="inventory-grid"></div>
-    
-    <div class="image-modal-overlay"></div>
-    <div class="image-modal">
-        <img class="image-modal-img" src="" alt="">
+
+    <div class="confirmation-screen">
+        <div class="confirmation-text">
+            <span id="selection-count">0</span> of 76 NO's Selected<br>
+            Proceed to RAGE ROOM<em>?</em>
+        </div>
+        <div class="confirmation-buttons">
+            <button class="confirmation-button" id="fuck-yes-button">FUCK YES</button>
+            <button class="confirmation-button" id="fuck-no-button">FUCK NO</button>
+        </div>
     </div>
 
     <div class="button-container">
@@ -29,83 +35,85 @@
     
 <script>
 const labels = [
-    '[01] PARKING24HR',
-    '[02] STANDINGFORCONSTRUCTION',
-    '[03] BLOCKDRIVEWAY',
-    '04_SMOKING',
-    '05_ELEVATOR_ICOFIRE',
-    '06_DANGERSMOKING',
-    '07_DANGERENTER',
-    '08_STANDING+PARKING',
-    '09_ENTER',
-    '10_EATDRINKSMOKE',
-    '11_ENTERCROSSTRACK',
-    '12_DUMPING',
-    '13_FLYERSMENUSADVERTISEMENTS',
-    '14_UNSOLICITEDADVERTISEMENTS',
-    '15_DUMPINGFINE500',
-    '16_SOLICITINGOREXCEPTIONS',
-    '17_TRESPASSORPROSECUTE',
-    '18_PARKORTOWED',
-    '19_STEALMYRECYCLING',
-    '20_BLOCKDRIVEWAY',
-    '21_TRESPASS',
-    '22_TRESPASSONPROPERTY',
-    '23_THRUTRAFFIC4HOSPITAL',
-    '24_SMOKE25FT',
-    '25_BLOCKSTAIRB',
-    '26_BLOCKFIREEXIT',
-    '27_SMOKING',
-    '28_DUMPANDGETPROSECUTED',
-    '29_SMOKEVAPEECIG',
-    '30_STANDUNDERLIFTS',
-    '31_TRESPASS',
-    '32_PARKINGFORCONSTRUCTION',
-    '33_SOLICITINGLOITERINGTRESPASSING',
-    '34_BLOCKLOADINGDOCK',
-    '35_PARKSTANDONPRIVATEST',
-    '36_PARKACTIVECROSSING',
-    '37_OUTSIDEFOODBEV',
-    '38_OVERFIIIIILL',
-    '39_PPLONLYOPERATOR',
-    '40_EXITXXXXXX',
-    '41_CHILDRENONCART',
-    '42_TOUCHTHANKS',
-    '43_ENTERROOMRUN',
-    '44_ENTER',
-    '45_COMMERCIALTRAFFIC',
-    '46_PUBLICRESTROMCUSTOMERSONLY',
-    '47_LOCKBIKESORCUT',
-    '48_CHAINBIKE2FENCE',
-    '49_TOBACCOVAPE4UNDER21',
-    '50_FLYERSADMENUSPLS',
-    '51_SMOKINGDURINGFUELING',
-    '52_DUMPINGBYMTA',
-    '53_HOUSEHOLDORBUSINESSTRASH',
-    '54_IDLINGENGINE',
-    '55_PARKINGBYFDNY',
-    '56_ENTRYORMAYBEYES',
-    '57_HOODIESSKIMASKSBANDANAS',
-    '58_DOGORBIKEINSTORE',
-    '59_TRESPASSING',
-    '60_BLOCKINGPLSANDTHANKS',
-    '61_LITTER4CHURCH',
-    '62_BALLPLAYING',
-    '63_OURLAUNDRYINOURMACHINES',
-    '64_TRESPASSINGORPROSECUTED',
-    '65_TRESPASSINGONOURPROPERTY',
-    '66_STUPIDPPL',
-    '67_MOPEDSANDATVS',
-    '68_POSTINGBILLS',
-    '69_CLIMBING',
-    '70_RIDINGINPORTAUTHORITY',
-    '71_ENTERBUTDELIVERIESROK',
-    '72_SOLICITLOITERORTRESPASS',
-    '73_BIKINGINFLATIRON',
-    '74_SHOESINDRYERS',
-    '75_BUYORSELLEBT',
-    '76_SMOKINGBYPUFFIN'
+    '1. PARKING24HR',
+    '2. STANDINGFORCONSTRUCTION',
+    '3. BLOCKDRIVEWAY',
+    '4. SMOKING',
+    '5. ELEVATOR_ICOFIRE',
+    '6. DANGERSMOKING',
+    '7. DANGERENTER',
+    '8. STANDING+PARKING',
+    '9. ENTER',
+    '10. EATDRINKSMOKE',
+    '11. ENTERCROSSTRACK',
+    '12. DUMPING',
+    '13. FLYERSMENUSADVERTISEMENTS',
+    '14. UNSOLICITEDADVERTISEMENTS',
+    '15. DUMPINGFINE500',
+    '16. SOLICITINGOREXCEPTIONS',
+    '17. TRESPASSORPROSECUTE',
+    '18. PARKORTOWED',
+    '19. STEALMYRECYCLING',
+    '20. BLOCKDRIVEWAY',
+    '21. TRESPASS',
+    '22. TRESPASSONPROPERTY',
+    '23. THRUTRAFFIC4HOSPITAL',
+    '24. SMOKE25FT',
+    '25. BLOCKSTAIRB',
+    '26. BLOCKFIREEXIT',
+    '27. SMOKING',
+    '28. DUMPANDGETPROSECUTED',
+    '29. SMOKEVAPEECIG',
+    '30. STANDUNDERLIFTS',
+    '31. TRESPASS',
+    '32. PARKINGFORCONSTRUCTION',
+    '33. SOLICITINGLOITERINGTRESPASSING',
+    '34. BLOCKLOADINGDOCK',
+    '35. PARKSTANDONPRIVATEST',
+    '36. PARKACTIVECROSSING',
+    '37. OUTSIDEFOODBEV',
+    '38. OVERFIIIIILL',
+    '39. PPLONLYOPERATOR',
+    '40. EXITXXXXXX',
+    '41. CHILDRENONCART',
+    '42. TOUCHTHANKS',
+    '43. ENTERROOMRUN',
+    '44. ENTER',
+    '45. COMMERCIALTRAFFIC',
+    '46. RESTROOMS4CUSTOMERSONLY',
+    '47. LOCKBIKESORGETCUT',
+    '48. CHAINBIKE2FENCE',
+    '49. TOBACCOVAPE4UNDER21',
+    '50. FLYERSADSMENUSPLS',
+    '51. SMOKINGDURINGFUELING',
+    '52. DUMPINGBYMTA',
+    '53. HOUSEHOLDORBUSINESSTRASH',
+    '54. IDLINGENGINE',
+    '55. PARKINGBYFDNY',
+    '56. ENTRYORMAYBEYES',
+    '57. HOODIESSKIMASKSBANDANAS',
+    '58. DOGORBIKEINSTORE',
+    '59. TRESPASSING',
+    '60. BLOCKINGPLSANDTHANKS',
+    '61. LITTER4CHURCH',
+    '62. BALLPLAYING',
+    '63. OURLAUNDRYINOURMACHINES',
+    '64. TRESPASSINGORPROSECUTED',
+    '65. TRESPASSINGONOURPROPERTY',
+    '66. STUPIDPPL',
+    '67. MOPEDSANDATVS',
+    '68. POSTINGBILLS',
+    '69. CLIMBING',
+    '70. RIDINGINPORTAUTHORITY',
+    '71. ENTERBUTDELIVERIESROK',
+    '72. SOLICITLOITERORTRESPASS',
+    '73. BIKINGINFLATIRON',
+    '74. SHOESINDRYERS',
+    '75. BUYORSELLEBT',
+    '76. SMOKINGBYPUFFIN',
 ];
+
+let buttonTimeout = null;
 
 function setFavicon() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -194,6 +202,10 @@ function createInventoryGrid() {
     }
 }
 
+function getSelectedCount() {
+    return document.querySelectorAll('.checkbox-icon[data-checked="true"]').length;
+}
+
 function updatePickButton() {
     const pickButton = document.getElementById('pick-button');
     const anyChecked = document.querySelector('.checkbox-icon[data-checked="true"]');
@@ -205,6 +217,22 @@ function updatePickButton() {
         pickButton.textContent = 'PICK BEFORE YOU RAGE';
         pickButton.classList.add('disabled');
     }
+}
+
+function showTargetFeedback(number) {
+    const pickButton = document.getElementById('pick-button');
+    const formattedNumber = String(number).padStart(2, '0');
+    
+    if (buttonTimeout) {
+        clearTimeout(buttonTimeout);
+    }
+    
+    pickButton.textContent = `.${formattedNumber} ADDED TO TARGET`;
+    pickButton.classList.remove('disabled');
+    
+    buttonTimeout = setTimeout(() => {
+        updatePickButton();
+    }, 1000);
 }
 
 function toggleCheckbox(checkboxElement) {
@@ -229,6 +257,7 @@ function toggleCheckbox(checkboxElement) {
         if (imgElement) {
             imgElement.src = `img/no${number}_${theme}.webp`;
         }
+        updatePickButton();
     } else {
         checkboxElement.src = `img/checkbox_check_${theme}.svg`;
         checkboxElement.dataset.checked = 'true';
@@ -242,9 +271,8 @@ function toggleCheckbox(checkboxElement) {
         if (imgElement) {
             imgElement.src = `img/no${number}_${invertedTheme}.webp`;
         }
+        showTargetFeedback(number);
     }
-    
-    updatePickButton();
 }
 
 function updateInventoryImages() {
@@ -277,12 +305,15 @@ function selectAllItems() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
     const invertedTheme = isDarkMode ? 'light' : 'dark';
+    const pickButton = document.getElementById('pick-button');
+    let anyNewlyChecked = false;
     
     checkboxes.forEach(checkbox => {
         const number = checkbox.dataset.number;
         const isChecked = checkbox.dataset.checked === 'true';
         
         if (!isChecked) {
+            anyNewlyChecked = true;
             const labelElement = document.querySelector(`.small-text[data-number="${number}"]`);
             const containerElement = checkbox.closest('.inventory-item-container');
             const imgElement = containerElement.querySelector('.inventory-item');
@@ -302,13 +333,56 @@ function selectAllItems() {
         }
     });
     
-    updatePickButton();
+    if (anyNewlyChecked) {
+        if (buttonTimeout) {
+            clearTimeout(buttonTimeout);
+        }
+        
+        pickButton.textContent = 'ALL ADDED TO TARGET';
+        pickButton.classList.remove('disabled');
+        
+        buttonTimeout = setTimeout(() => {
+            updatePickButton();
+        }, 1500);
+    }
+}
+
+function showConfirmationScreen() {
+    const selectedCount = getSelectedCount();
+    if (selectedCount === 0) return;
+    
+    document.querySelector('.inventory-grid').classList.add('hidden');
+    document.querySelector('.button-container').classList.add('hidden');
+    document.querySelector('.confirmation-screen').classList.add('active');
+    document.getElementById('selection-count').textContent = selectedCount;
+}
+
+function hideConfirmationScreen() {
+    document.querySelector('.inventory-grid').classList.remove('hidden');
+    document.querySelector('.button-container').classList.remove('hidden');
+    document.querySelector('.confirmation-screen').classList.remove('active');
 }
 
 createInventoryGrid();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateInventoryImages);
 
 document.getElementById('select-all-button').addEventListener('click', selectAllItems);
+
+document.getElementById('pick-button').addEventListener('click', () => {
+    const pickButton = document.getElementById('pick-button');
+    if (!pickButton.classList.contains('disabled')) {
+        showConfirmationScreen();
+    }
+});
+
+document.getElementById('fuck-yes-button').addEventListener('click', () => {
+    // Add your rage room logic here
+    console.log('Proceeding to rage room!');
+});
+
+document.getElementById('fuck-no-button').addEventListener('click', () => {
+    hideConfirmationScreen();
+});
 
 function openImageModal(number, theme) {
     const modal = document.querySelector('.image-modal');
@@ -337,9 +411,6 @@ function closeImageModal() {
     closeIcon.classList.remove('active');
     document.body.classList.remove('no-scroll');
 }
-
-document.querySelector('.image-modal-overlay').addEventListener('click', closeImageModal);
-document.querySelector('.image-modal-close').addEventListener('click', closeImageModal);
 </script>
 </body>
 </html>
