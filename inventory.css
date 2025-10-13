@@ -310,6 +310,12 @@ body.no-scroll {
     }
 }
 
+@media (max-width: 1000px) {
+    .inventory-item {
+        padding: 30px;
+    }
+}
+
 @media (max-width: 550px) {
     .marquee-container {
         justify-content: center;
@@ -355,5 +361,5 @@ body.no-scroll {
 
     .image-modal-overlay {
     margin-top: -4px;
-}
+    }
 }
