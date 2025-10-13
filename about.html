@@ -4,110 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FUCK NO</title>
-    <link rel="stylesheet" href="inventory.css">
+    <link rel="stylesheet" href="about.css">
     <link rel="icon" type="image/x-icon" href="img/favicon_light.svg">
 </head>
 <body>
-    <div class="mobile-menu-overlay"></div>
-    
-    <div class="mobile-menu">
-        <div class="mobile-menu-item">
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/rageroom.html">Rage Room</a>
-            <div class="mobile-menu-line"></div>
-        </div>
-        <div class="mobile-menu-item">
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/inventory.html">Inventory</a>
-            <div class="mobile-menu-line"></div>
-        </div>
-        <div class="mobile-menu-item">
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html">About</a>
-            <div class="mobile-menu-line"></div>
-        </div>
-    </div>
-
     <div class="marquee-container">
-        <img class="menu-icon" src="img/menu_light.svg" alt="Menu" draggable="false">
         <a class="marquee-header" href="https://gab333t.github.io/fuckno/">FUCK NO</a>
         <nav class="marquee-nav">
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/rageroom.html">Rage Room</a>
-            <a class="marquee-text selected" href="https://gab333t.github.io/fuckno/inventory.html">Inventory</a>
-            <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html">About</a>
+            <a class="marquee-text" href="https://gab333t.github.io/fuckno/about.html"></a>
         </nav>
     </div>
 
+    <h2 class="body-text">FUCK NO is an interactive playground that lets you retaliate against all the times you've been told NO. It's satirical and vulgar in its tone.</h2>
+
     
-</body>
 <script>
-        function setFavicon() {
-            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const faviconPath = isDarkMode ? 'img/favicon_dark.svg' : 'img/favicon_light.svg';
+function setFavicon() {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const faviconPath = isDarkMode ? 'img/favicon_dark.svg' : 'img/favicon_light.svg';
 
-            let favicon = document.querySelector("link[rel='icon']");
-            if (!favicon) {
-                favicon = document.createElement('link');
-                favicon.rel = 'icon';
-                document.head.appendChild(favicon);
-            }
-            favicon.href = faviconPath;
-        }
+    let favicon = document.querySelector("link[rel='icon']");
+    if (!favicon) {
+        favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        document.head.appendChild(favicon);
+    }
+    favicon.href = faviconPath;
+}
 
-        function setMenuIcon(isMenuOpen = false) {
-            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const menuIcon = document.querySelector('.menu-icon');
-            
-            if (isMenuOpen) {
-                menuIcon.src = isDarkMode ? 'img/menu_close_dark.svg' : 'img/menu_close_light.svg';
-            } else {
-                menuIcon.src = isDarkMode ? 'img/menu_dark.svg' : 'img/menu_light.svg';
-            }
-        }
+function updateAboutText() {
+    const aboutLink = document.querySelector('.marquee-text');
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (window.innerWidth <= 550) {
+        const imagePath = isDarkMode ? 'img/about_select_dark.svg' : 'img/about_select_light.svg';
+        aboutLink.innerHTML = `<img src="${imagePath}" alt="About" class="about-icon" draggable="false">`;
+    } else {
+        aboutLink.textContent = 'About';
+    }
+}
 
-        function toggleMenu() {
-            const mobileMenu = document.querySelector('.mobile-menu');
-            const overlay = document.querySelector('.mobile-menu-overlay');
-            const isOpening = !mobileMenu.classList.contains('active');
-            
-            mobileMenu.classList.toggle('active');
-            overlay.classList.toggle('active');
-            setMenuIcon(isOpening);
-        }
+setFavicon();
+updateAboutText();
 
-        setFavicon();
-        setMenuIcon();
-        
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-            setFavicon();
-            const isMenuOpen = document.querySelector('.mobile-menu').classList.contains('active');
-            setMenuIcon(isMenuOpen);
-        });
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    setFavicon();
+    updateAboutText();
+});
 
-        function setSelectedStyle() {
-            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const selected = document.querySelector('.selected');
-            if (selected) {
-                if (isDarkMode) {
-                    selected.style.backgroundColor = 'white';
-                    selected.style.color = 'black';
-                } else {
-                    selected.style.backgroundColor = 'black';
-                    selected.style.color = 'white';
-                }
-            }
-        }
-        setSelectedStyle();
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setSelectedStyle);      
+window.addEventListener('resize', updateAboutText);
 
-        document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
-        document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
-
-        document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
-        document.querySelector('.mobile-menu-overlay').addEventListener('click', toggleMenu);
-
-        let titleIndex = 0;
-        const titles = ['FUCK NO', 'INVENTORY'];
-        setInterval(() => {
-            titleIndex = (titleIndex + 1) % titles.length;
-            document.title = titles[titleIndex];
-        }, 3000);
+let titleIndex = 0;
+const titles = ['FUCK NO', 'ABOUT'];
+setInterval(() => {
+    titleIndex = (titleIndex + 1) % titles.length;
+    document.title = titles[titleIndex];
+}, 3000);
 </script>
+</body>
 </html>
