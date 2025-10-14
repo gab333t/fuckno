@@ -96,6 +96,12 @@ body {
     padding: 10px 5px;
 }
 
+.tool-selection-container.hidden {
+    opacity: 0;
+    visibility: hidden;
+    display: none;
+}
+
 .tool-selection-container .body-text {
     margin-left: 0;
     margin-bottom: 30px;
@@ -145,6 +151,37 @@ body {
     visibility: visible;
 }
 
+.instructions-container {
+    position: absolute;
+    top: 90px;
+    left: 20px;
+    margin: 0;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.instructions-container.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.instructions-text {
+    margin: 0;
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+.start-button {
+    font-family: Articulate_Medium;
+    font-size: 20px;
+    letter-spacing: -0.25px;
+    padding: 8px 16px;
+    margin-top: 20px;
+    cursor: pointer;
+    border: none;
+}
+
 .timer {
     position: fixed;
     bottom: 40px;
@@ -154,6 +191,13 @@ body {
     letter-spacing: -0.25px;
     margin: 0;
     z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.timer.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 @media (prefers-color-scheme: light) {
@@ -173,6 +217,11 @@ body {
     }
     .timer {
         color: black;
+    }
+    .start-button {
+        border: 1.5px solid white;
+        background-color: black;
+        color: white;
     }
 }
 
@@ -211,6 +260,12 @@ body {
     .timer {
         color: white;
     }
+    
+    .start-button {
+        border: 1.5px solid black;
+        background-color: white;
+        color: black;
+    }
 }
 
 @media (max-width: 550px) {
@@ -228,6 +283,61 @@ body {
         letter-spacing: -2.5px;
         position: static;
     }
+
+    .tool-selection-container {
+        padding: 10px 20px;
+        margin-top: 20px;
+    }
+
+    .tool-selection-container .body-text {
+        font-size: 16px;
+        margin-bottom: 20px;
+        max-width: 90vw;
+    }
+
+    .tool-container {
+        gap: 20px;
+    }
+
+    .tool-container img {
+        max-width: 60px;
+    }
+
+    .tool-descriptions {
+        margin-top: 30px;
+        padding: 0 20px;
+    }
+
+    .tool-description {
+        font-size: 14px;
+        max-width: 90vw;
+    }
+
+    .instructions-container {
+        top: 70px;
+        left: 10px;
+    }
+
+    .instructions-text {
+        font-size: 16px;
+        max-width: 90vw;
+    }
+
+    .start-button {
+        font-size: 16px;
+        padding: 6px 12px;
+        margin-top: 15px;
+    }
+
+    .timer {
+        font-size: 40px;
+        bottom: 35px;
+        left: 10px;
+    }
+
+    .marquee-content {
+        font-size: 3vw;
+    }
 }
 
 .bottom-marquee-container {
@@ -238,6 +348,13 @@ body {
     overflow: hidden;
     white-space: nowrap;
     z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.bottom-marquee-container.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 .bottom-marquee {

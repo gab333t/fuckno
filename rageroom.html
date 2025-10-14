@@ -15,7 +15,7 @@
         </nav>
     </div>
 
-    <div class="tool-selection-container">
+    <div class="tool-selection-container" id="tool-selection">
         <h2 class="body-text">Select your tool.</h2>
         <div class="tool-container">
             <img src="img/rock.webp" alt="Rock icon." data-tool="rock">
@@ -24,10 +24,19 @@
         </div>
         
         <div class="tool-descriptions">
-            <h2 class="body-text tool-description" id="rock-desc">ROCK<br>Deals 3 damage every 1 second.</h2>
-            <h2 class="body-text tool-description" id="sledgehammer-desc">SLEDGEHAMMER<br>Deals 5 damage every 2 seconds.</h2>
-            <h2 class="body-text tool-description" id="dynamite-desc">DYNAMITE<br>Deals 8 damage every 3 seconds.</h2>
+            <h2 class="body-text tool-description" id="rock-desc">ROCK<br>Deals 3 damage with a 1 second cooldown.</h2>
+            <h2 class="body-text tool-description" id="sledgehammer-desc">SLEDGEHAMMER<br>Deals 5 damage with a 2 second cooldown.</h2>
+            <h2 class="body-text tool-description" id="dynamite-desc">DYNAMITE<br>Deals 8 damage with a 3 second cooldown.</h2>
         </div>
+    </div>
+
+    <div class="instructions-container" id="instructions-container">
+        <h2 class="body-text instructions-text" id="instructions">You're about to destroy the images you've selected as they cycle through a queue.
+            You can change the tool during the experience to better accomodate your needs.
+            At the end, you'll be ranked based on how long you take and the number of NO's you brought into the RAGE ROOM today.<br><br>
+            You'll be starting off with <span id="tool-name"></span>. Don't hold back.
+        </h2>
+        <button class="start-button" id="start-button">START</button>
     </div>
 
     <div class="bottom-marquee-container">
@@ -37,7 +46,7 @@
         </div>
     </div>
 
-    <h2 class="timer">0:00</h2>
+    <h2 class="timer">00:00</h2>
 
 <script>
 function setFavicon() {
@@ -83,6 +92,7 @@ setInterval(() => {
 }, 3000);
 
 const toolImages = document.querySelectorAll('.tool-container img');
+let selectedTool = null;
 
 toolImages.forEach(img => {
     const originalSrc = img.src;
@@ -115,25 +125,53 @@ toolImages.forEach(img => {
             description.classList.remove('visible');
         }
     });
+
+    img.addEventListener('click', () => {
+        selectedTool = toolType;
+        
+        const toolNameSpan = document.getElementById('tool-name');
+        if (toolType === 'rock') {
+            toolNameSpan.textContent = 'a ROCK';
+        } else if (toolType === 'sledgehammer') {
+            toolNameSpan.textContent = 'a SLEDGEHAMMER';
+        } else if (toolType === 'dynamite') {
+            toolNameSpan.textContent = 'DYNAMITE';
+        }
+        
+        document.getElementById('tool-selection').classList.add('hidden');
+        
+        document.getElementById('instructions-container').classList.add('visible');
+    });
 });
 
-// Timer functionality
-let startTime = Date.now();
+let startTime = null;
+let timerInterval = null;
 const timerElement = document.querySelector('.timer');
 
 function updateTimer() {
+    if (!startTime) return;
+    
     const elapsed = Date.now() - startTime;
     
     const seconds = Math.floor(elapsed / 1000);
-    const milliseconds = Math.floor((elapsed % 1000) / 10); // Get centiseconds (2 digits)
+    const milliseconds = Math.floor((elapsed % 1000) / 10);
     
-    const formattedTime = `${seconds}:${String(milliseconds).padStart(2, '0')}`;
+    const formattedTime = `${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(2, '0')}`;
     timerElement.textContent = formattedTime;
 }
 
-// Update timer every 10ms for smooth millisecond counting
-setInterval(updateTimer, 10);
-updateTimer(); // Initial call
+document.getElementById('start-button').addEventListener('click', () => {
+    document.querySelector('.timer').classList.add('visible');
+    document.querySelector('.bottom-marquee-container').classList.add('visible');
+    
+    document.getElementById('instructions-container').classList.remove('visible');
+    
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 10);
+    updateTimer();
+    
+    console.log('Game starting with tool:', selectedTool);
+});
 </script>
 </body>
 </html>
