@@ -15,6 +15,11 @@
         </nav>
     </div>
 
+    <div class="error-container" id="error-container">
+        <h2 class="body-text error-text">ERROR:<br>Inventory not found.</h2>
+        <button class="start-button" id="return-button">RETURN TO INVENTORY</button>
+    </div>
+
     <div class="tool-selection-container" id="tool-selection">
         <h2 class="body-text">Select your tool.</h2>
         <div class="tool-container">
@@ -36,7 +41,42 @@
             At the end, you'll be ranked based on how long you take and the number of NO's you brought into the RAGE ROOM today.<br><br>
             You'll be starting off with <span id="tool-name"></span>. Don't hold back.
         </h2>
-        <button class="start-button" id="start-button">START</button>
+        <button class="start-button" id="start-button">RAGE</button>
+    </div>
+
+    <div class="game-container" id="game-container">
+        <div class="image-display">
+            <img id="current-image" src="" alt="Current NO sign">
+            <div class="health-bar-container">
+                <div class="health-bar" id="health-bar"></div>
+            </div>
+            <div class="damage-indicator" id="damage-indicator"></div>
+        </div>
+        
+        <div class="game-info">
+            <h2 class="body-text info-text">
+                <span id="images-remaining">0</span> NO's remaining
+            </h2>
+        </div>
+
+        <div class="tool-switcher">
+            <h2 class="body-text switch-text">Switch tool:</h2>
+            <div class="tool-icons">
+                <img src="img/rock.webp" alt="Rock" data-tool="rock" class="tool-icon">
+                <img src="img/sledgehammer.webp" alt="Sledgehammer" data-tool="sledgehammer" class="tool-icon">
+                <img src="img/dynamite.webp" alt="Dynamite" data-tool="dynamite" class="tool-icon">
+            </div>
+        </div>
+    </div>
+
+    <div class="results-container" id="results-container">
+        <h2 class="body-text results-title">RAGE ROOM COMPLETE</h2>
+        <div class="results-stats">
+            <h2 class="body-text stat-text">Time: <span id="final-time">00:00</span></h2>
+            <h2 class="body-text stat-text">NO's Destroyed: <span id="final-count">0</span></h2>
+            <h2 class="body-text stat-text">Rank: <span id="final-rank">-</span></h2>
+        </div>
+        <button class="start-button" id="restart-button">RESTART</button>
     </div>
 
     <div class="bottom-marquee-container">
@@ -91,8 +131,28 @@ setInterval(() => {
     document.title = titles[titleIndex];
 }, 3000);
 
+function getSelectedImages() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selected = urlParams.get('selected');
+    
+    if (selected) {
+        return selected.split(',').map(num => parseInt(num));
+    }
+    
+    return Array.from({length: 76}, (_, i) => i + 1);
+}
+
+const selectedImages = getSelectedImages();
+let currentImageIndex = 0;
+let imageQueue = [...selectedImages];
+
 const toolImages = document.querySelectorAll('.tool-container img');
 let selectedTool = null;
+const toolStats = {
+    rock: { damage: 3, cooldown: 1000 },
+    sledgehammer: { damage: 5, cooldown: 2000 },
+    dynamite: { damage: 8, cooldown: 3000 }
+};
 
 toolImages.forEach(img => {
     const originalSrc = img.src;
@@ -139,7 +199,6 @@ toolImages.forEach(img => {
         }
         
         document.getElementById('tool-selection').classList.add('hidden');
-        
         document.getElementById('instructions-container').classList.add('visible');
     });
 });
@@ -152,7 +211,6 @@ function updateTimer() {
     if (!startTime) return;
     
     const elapsed = Date.now() - startTime;
-    
     const seconds = Math.floor(elapsed / 1000);
     const milliseconds = Math.floor((elapsed % 1000) / 10);
     
@@ -160,17 +218,134 @@ function updateTimer() {
     timerElement.textContent = formattedTime;
 }
 
+let currentHealth = 20;
+let maxHealth = 20;
+let canAttack = true;
+let totalDestroyed = 0;
+
+function loadNextImage() {
+    if (imageQueue.length === 0) {
+        endGame();
+        return;
+    }
+    
+    const imageNumber = imageQueue[0];
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = isDarkMode ? 'dark' : 'light';
+    
+    const currentImage = document.getElementById('current-image');
+    currentImage.src = `img/no${imageNumber}_${theme}.webp`;
+    currentImage.alt = `NO sign ${imageNumber}`;
+    
+    currentHealth = maxHealth;
+    updateHealthBar();
+    updateRemainingCount();
+}
+
+function updateHealthBar() {
+    const healthBar = document.getElementById('health-bar');
+    const percentage = (currentHealth / maxHealth) * 100;
+    healthBar.style.width = `${percentage}%`;
+}
+
+function updateRemainingCount() {
+    document.getElementById('images-remaining').textContent = imageQueue.length;
+}
+
+function showDamage(damage) {
+    const indicator = document.getElementById('damage-indicator');
+    indicator.textContent = `-${damage}`;
+    indicator.classList.add('show');
+    
+    setTimeout(() => {
+        indicator.classList.remove('show');
+    }, 500);
+}
+
+function attackImage() {
+    if (!canAttack || imageQueue.length === 0) return;
+    
+    const damage = toolStats[selectedTool].damage;
+    currentHealth -= damage;
+    
+    showDamage(damage);
+    updateHealthBar();
+    
+    if (currentHealth <= 0) {
+        imageQueue.shift();
+        totalDestroyed++;
+        
+        if (imageQueue.length > 0) {
+            setTimeout(() => {
+                loadNextImage();
+            }, 300);
+        } else {
+            endGame();
+        }
+    }
+    
+    canAttack = false;
+    setTimeout(() => {
+        canAttack = true;
+    }, toolStats[selectedTool].cooldown);
+}
+
+function getRank(time, count) {
+    const timeInSeconds = time / 1000;
+    const avgTimePerImage = timeInSeconds / count;
+    
+    if (avgTimePerImage < 2) return 'S';
+    if (avgTimePerImage < 3) return 'A';
+    if (avgTimePerImage < 4) return 'B';
+    if (avgTimePerImage < 5) return 'C';
+    return 'D';
+}
+
+function endGame() {
+    clearInterval(timerInterval);
+    
+    const finalTime = Date.now() - startTime;
+    const seconds = Math.floor(finalTime / 1000);
+    const milliseconds = Math.floor((finalTime % 1000) / 10);
+    const formattedTime = `${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(2, '0')}`;
+    
+    document.getElementById('final-time').textContent = formattedTime;
+    document.getElementById('final-count').textContent = totalDestroyed;
+    document.getElementById('final-rank').textContent = getRank(finalTime, totalDestroyed);
+    
+    document.getElementById('game-container').classList.remove('visible');
+    document.querySelector('.timer').classList.remove('visible');
+    document.querySelector('.bottom-marquee-container').classList.remove('visible');
+    document.getElementById('results-container').classList.add('visible');
+}
+
 document.getElementById('start-button').addEventListener('click', () => {
     document.querySelector('.timer').classList.add('visible');
     document.querySelector('.bottom-marquee-container').classList.add('visible');
-    
     document.getElementById('instructions-container').classList.remove('visible');
+    document.getElementById('game-container').classList.add('visible');
     
     startTime = Date.now();
     timerInterval = setInterval(updateTimer, 10);
     updateTimer();
     
-    console.log('Game starting with tool:', selectedTool);
+    loadNextImage();
+});
+
+document.getElementById('current-image').addEventListener('click', attackImage);
+
+document.querySelectorAll('.tool-icon').forEach(icon => {
+    icon.addEventListener('click', () => {
+        const newTool = icon.dataset.tool;
+        selectedTool = newTool;
+        
+        document.querySelectorAll('.tool-icon').forEach(i => i.classList.remove('active'));
+        icon.classList.add('active');
+    });
+});
+
+document.getElementById('restart-button').addEventListener('click', () => {
+    window.location.href = 'https://gab333t.github.io/fuckno/';
 });
 </script>
 </body>

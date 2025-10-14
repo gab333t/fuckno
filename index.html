@@ -410,6 +410,13 @@ function closeImageModal() {
     closeIcon.classList.remove('active');
     document.body.classList.remove('no-scroll');
 }
+
+document.getElementById('fuck-yes-button').addEventListener('click', () => {
+    const selected = Array.from(document.querySelectorAll('.checkbox-icon[data-checked="true"]'))
+        .map(cb => cb.dataset.number)
+        .join(',');
+    window.location.href = `rageroom.html?selected=${selected}`;
+});
 </script>
 </body>
 </html>

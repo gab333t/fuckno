@@ -19,6 +19,10 @@
     box-sizing: border-box;
 }
 
+html {
+    overflow-x: hidden;
+}
+
 .marquee-container {
     position: fixed;
     top: 0;
@@ -84,6 +88,32 @@ a {
 
 body {
     padding-top: 70px;
+    overflow-x: hidden;
+}
+
+.error-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 70px - 100px);
+    margin-top: 50px;
+    padding: 10px 5px;
+}
+
+.error-container.visible {
+    display: flex;
+}
+
+.error-text {
+    margin-left: 0;
+    margin-bottom: 30px;
+    text-align: center;
+    text-indent: 0;
+    max-width: none;
+    font-family: Articulate_Regular;
+    font-size: 20px;
+    letter-spacing: -0.25px;
 }
 
 .tool-selection-container {
@@ -155,9 +185,11 @@ body {
     position: absolute;
     top: 90px;
     left: 20px;
+    right: 20px;
     margin: 0;
     opacity: 0;
     visibility: hidden;
+    max-width: calc(100vw - 40px);
 }
 
 .instructions-container.visible {
@@ -170,6 +202,8 @@ body {
     position: relative;
     top: 0;
     left: 0;
+    max-width: 50vw;
+    text-indent: 0;
 }
 
 .start-button {
@@ -178,13 +212,14 @@ body {
     letter-spacing: -0.25px;
     padding: 8px 16px;
     margin-top: 20px;
+    margin-left: 0;
     cursor: pointer;
     border: none;
 }
 
 .timer {
     position: fixed;
-    bottom: 40px;
+    bottom: 20px;
     left: 20px;
     font-family: Articulate_Regular;
     font-size: 60px;
@@ -198,6 +233,147 @@ body {
 .timer.visible {
     opacity: 1;
     visibility: visible;
+}
+
+/* Game Container */
+.game-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 70px - 100px);
+    padding: 40px 20px;
+}
+
+.game-container.visible {
+    display: flex;
+}
+
+.image-display {
+    position: relative;
+    max-width: 500px;
+    width: 80%;
+    margin-bottom: 40px;
+}
+
+#current-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: pointer;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    transition: transform 0.1s;
+}
+
+#current-image:active {
+    transform: scale(0.95);
+}
+
+.health-bar-container {
+    width: 100%;
+    height: 20px;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.health-bar {
+    height: 100%;
+    width: 100%;
+    transition: width 0.3s ease;
+}
+
+.damage-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: Articulate_Black;
+    font-size: 60px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.damage-indicator.show {
+    opacity: 1;
+}
+
+.game-info {
+    margin-bottom: 30px;
+}
+
+.info-text {
+    margin: 0;
+    text-indent: 0;
+    text-align: center;
+}
+
+.tool-switcher {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.switch-text {
+    margin: 0;
+    text-indent: 0;
+    text-align: center;
+}
+
+.tool-icons {
+    display: flex;
+    gap: 20px;
+}
+
+.tool-icon {
+    width: 50px;
+    height: auto;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.tool-icon:hover,
+.tool-icon.active {
+    opacity: 1;
+}
+
+/* Results Container */
+.results-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 70px - 100px);
+    padding: 40px 20px;
+}
+
+.results-container.visible {
+    display: flex;
+}
+
+.results-title {
+    font-family: Articulate_Black;
+    font-size: 40px;
+    margin: 0 0 40px 0;
+    text-indent: 0;
+    text-align: center;
+}
+
+.results-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.stat-text {
+    margin: 0;
+    text-indent: 0;
+    text-align: center;
 }
 
 @media (prefers-color-scheme: light) {
@@ -222,6 +398,19 @@ body {
         border: 1.5px solid white;
         background-color: black;
         color: white;
+    }
+    .health-bar-container {
+        background-color: lightgray;
+        border: 1.5px solid black;
+    }
+    .health-bar {
+        background-color: black;
+    }
+    .damage-indicator {
+        color: red;
+    }
+    .body-text {
+        color: black;
     }
 }
 
@@ -265,6 +454,19 @@ body {
         border: 1.5px solid black;
         background-color: white;
         color: black;
+    }
+    
+    .health-bar-container {
+        background-color: #333;
+        border: 1.5px solid white;
+    }
+    
+    .health-bar {
+        background-color: white;
+    }
+    
+    .damage-indicator {
+        color: red;
     }
 }
 
@@ -312,15 +514,28 @@ body {
         font-size: 14px;
         max-width: 90vw;
     }
+    
+    .error-container {
+        padding: 10px 20px;
+        margin-top: 20px;
+    }
+    
+    .error-text {
+        font-size: 16px;
+        margin-bottom: 20px;
+        max-width: 90vw;
+    }
 
     .instructions-container {
         top: 70px;
         left: 10px;
+        right: 10px;
+        max-width: calc(100vw - 20px);
     }
 
     .instructions-text {
-        font-size: 16px;
-        max-width: 90vw;
+        font-size: 14px;
+        max-width: calc(100vw - 20px);
     }
 
     .start-button {
@@ -337,6 +552,27 @@ body {
 
     .marquee-content {
         font-size: 3vw;
+    }
+    
+    .image-display {
+        width: 90%;
+        max-width: 300px;
+    }
+    
+    .damage-indicator {
+        font-size: 40px;
+    }
+    
+    .info-text, .switch-text, .stat-text {
+        font-size: 16px;
+    }
+    
+    .results-title {
+        font-size: 28px;
+    }
+    
+    .tool-icon {
+        width: 40px;
     }
 }
 
