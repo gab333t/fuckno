@@ -478,11 +478,291 @@ function createSmallFragments(imageElement, clickX, clickY) {
     cleanupOldFragments();
 }
 
-function createGlassFragments(imageElement, clickX, clickY, tool) {
+// Store crack paths for fragmenting the image later
+let crackPaths = [];
+
+function createCrack(clickX, clickY, crackType) {
     const container = document.getElementById('image-display');
+    const img = document.getElementById('current-image');
+    const imgRect = img.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    
+    const relativeX = clickX - imgRect.left;
+    const relativeY = clickY - imgRect.top;
+    
+    const imgWidth = imgRect.width;
+    const imgHeight = imgRect.height;
+    
+    if (relativeX < 0 || relativeX > imgWidth || relativeY < 0 || relativeY > imgHeight) {
+        return;
+    }
+    
+    const margin = 0.125;
+    const minX = imgWidth * margin;
+    const maxX = imgWidth * (1 - margin);
+    const minY = imgHeight * margin;
+    const maxY = imgHeight * (1 - margin);
+    
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const crackColor = isDarkMode ? '#000000' : '#FFFFFF';
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.style.position = 'absolute';
+    svg.style.top = (imgRect.top - containerRect.top) + 'px';
+    svg.style.left = (imgRect.left - containerRect.left) + 'px';
+    svg.style.width = imgWidth + 'px';
+    svg.style.height = imgHeight + 'px';
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '10';
+    svg.style.transition = 'transform 0.1s ease-out';
+    svg.setAttribute('viewBox', `0 0 ${imgWidth} ${imgHeight}`);
+    
+    let numBranches, strokeWidth, segmentLength, segments;
+    
+    if (crackType === 'light') {
+        numBranches = Math.floor(randomRange(3, 5));
+        strokeWidth = randomRange(1.2, 1.5);
+        segmentLength = randomRange(25, 45);
+        segments = Math.floor(randomRange(8, 12));
+    } else {
+        numBranches = Math.floor(randomRange(6, 10));
+        strokeWidth = randomRange(1.6, 1.9);
+        segmentLength = randomRange(35, 65);
+        segments = Math.floor(randomRange(12, 18));
+    }
+    
+    for (let i = 0; i < numBranches; i++) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const pathPoints = []; // Store points for this crack path
+        
+        let pathData = `M ${relativeX} ${relativeY}`;
+        pathPoints.push({ x: relativeX, y: relativeY });
+        
+        const baseAngle = (i / numBranches) * 360 + randomRange(-30, 30);
+        let currentX = relativeX;
+        let currentY = relativeY;
+        let currentAngle = baseAngle;
+        
+        for (let j = 0; j < segments; j++) {
+            const currentSegmentLength = segmentLength * (1 - j / segments * 0.3);
+            
+            currentAngle += randomRange(-25, 25);
+            
+            const radians = (currentAngle * Math.PI) / 180;
+            let nextX = currentX + Math.cos(radians) * currentSegmentLength;
+            let nextY = currentY + Math.sin(radians) * currentSegmentLength;
+            
+            nextX = Math.max(minX, Math.min(maxX, nextX));
+            nextY = Math.max(minY, Math.min(maxY, nextY));
+            
+            let controlX = (currentX + nextX) / 2 + randomRange(-5, 5);
+            let controlY = (currentY + nextY) / 2 + randomRange(-5, 5);
+            
+            controlX = Math.max(minX, Math.min(maxX, controlX));
+            controlY = Math.max(minY, Math.min(maxY, controlY));
+            
+            pathData += ` Q ${controlX} ${controlY} ${nextX} ${nextY}`;
+            pathPoints.push({ x: nextX, y: nextY });
+            
+            if (nextX === minX || nextX === maxX || nextY === minY || nextY === maxY) {
+                break;
+            }
+            
+            currentX = nextX;
+            currentY = nextY;
+            
+            const branchChance = crackType === 'light' ? 0.25 : 0.4;
+            if (Math.random() < branchChance && j > 2 && j < segments - 2) {
+                const branchAngle = currentAngle + randomRange(-70, 70);
+                const branchLength = randomRange(20, 40);
+                const branchRad = (branchAngle * Math.PI) / 180;
+                let branchX = currentX + Math.cos(branchRad) * branchLength;
+                let branchY = currentY + Math.sin(branchRad) * branchLength;
+                
+                branchX = Math.max(minX, Math.min(maxX, branchX));
+                branchY = Math.max(minY, Math.min(maxY, branchY));
+                
+                pathData += ` M ${currentX} ${currentY} L ${branchX} ${branchY}`;
+                pathData += ` M ${currentX} ${currentY}`;
+                
+                // Store branch as a separate path
+                crackPaths.push([
+                    { x: currentX, y: currentY },
+                    { x: branchX, y: branchY }
+                ]);
+            }
+        }
+        
+        path.setAttribute('d', pathData);
+        path.setAttribute('stroke', crackColor);
+        path.setAttribute('stroke-width', strokeWidth);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        path.setAttribute('opacity', '1');
+        
+        svg.appendChild(path);
+        
+        // Store the main crack path
+        crackPaths.push(pathPoints);
+    }
+    
+    container.appendChild(svg);
+}
+
+function clearCracks() {
+    const container = document.getElementById('image-display');
+    const cracks = container.querySelectorAll('svg');
+    cracks.forEach(crack => crack.remove());
+    crackPaths = [];
+}
+
+// Function to find regions divided by crack lines
+function createFragmentsFromCracks(imageElement, tool) {
     const rect = imageElement.getBoundingClientRect();
     
-    const fragments = [];
+    if (crackPaths.length === 0) {
+        // Fallback to original behavior if no cracks
+        createGlassFragmentsFallback(imageElement, rect.left + rect.width / 2, rect.top + rect.height / 2, tool);
+        return;
+    }
+    
+    // Create a grid of sample points to determine regions
+    const gridSize = 20;
+    const regions = [];
+    
+    for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+            const centerX = (x + 0.5) * (rect.width / gridSize);
+            const centerY = (y + 0.5) * (rect.height / gridSize);
+            
+            // Create a fragment for this region
+            const fragment = document.createElement('canvas');
+            const ctx = fragment.getContext('2d');
+            
+            // Create an irregular polygon around this point
+            const points = [];
+            const numPoints = Math.floor(randomRange(4, 7));
+            const baseRadius = Math.min(rect.width, rect.height) / gridSize * randomRange(0.8, 1.2);
+            
+            for (let i = 0; i < numPoints; i++) {
+                const angle = (i / numPoints) * TWO_PI;
+                const radius = baseRadius * randomRange(0.6, 1.4);
+                points.push({
+                    x: centerX + Math.cos(angle) * radius,
+                    y: centerY + Math.sin(angle) * radius
+                });
+            }
+            
+            // Calculate bounding box
+            const minX = Math.min(...points.map(p => p.x));
+            const maxX = Math.max(...points.map(p => p.x));
+            const minY = Math.min(...points.map(p => p.y));
+            const maxY = Math.max(...points.map(p => p.y));
+            const width = maxX - minX;
+            const height = maxY - minY;
+            
+            if (width < 5 || height < 5) continue;
+            
+            fragment.width = width;
+            fragment.height = height;
+            fragment.style.width = width + 'px';
+            fragment.style.height = height + 'px';
+            fragment.style.position = 'fixed';
+            fragment.style.pointerEvents = 'none';
+            fragment.style.zIndex = '500';
+            
+            // Draw the fragment
+            ctx.save();
+            ctx.translate(-minX, -minY);
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.clip();
+            
+            // Draw the image portion
+            ctx.drawImage(imageElement, 0, 0, rect.width, rect.height);
+            ctx.restore();
+            
+            // Position and animate
+            const startX = rect.left + centerX;
+            const startY = rect.top + centerY;
+            
+            const dx = centerX - rect.width / 2;
+            const dy = centerY - rect.height / 2;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const isDynamite = tool === 'dynamite';
+            const velocityMultiplier = isDynamite ? 3 : 1.5;
+            const velocityX = (dx / Math.max(distance, 1)) * randomRange(100, 300) * velocityMultiplier;
+            const velocityY = (dy / Math.max(distance, 1)) * randomRange(50, 200) * velocityMultiplier - randomRange(100, 300);
+            const rotationSpeed = randomRange(-360, 360);
+            
+            const gravity = 600;
+            const friction = 0.5;
+            const groundY = window.innerHeight - height;
+            
+            let posX = startX - width / 2;
+            let posY = startY - height / 2;
+            let velX = velocityX;
+            let velY = velocityY;
+            let rotation = randomRange(0, 360);
+            let isAnimating = true;
+            
+            fragment.style.left = posX + 'px';
+            fragment.style.top = posY + 'px';
+            fragment.style.transform = `rotate(${rotation}deg)`;
+            
+            const animate = () => {
+                if (isAnimating) {
+                    const deltaTime = 0.016;
+                    
+                    velY += gravity * deltaTime;
+                    
+                    posX += velX * deltaTime;
+                    posY += velY * deltaTime;
+                    rotation += rotationSpeed * deltaTime;
+                    
+                    if (posY >= groundY) {
+                        posY = groundY;
+                        velY = -velY * friction;
+                        velX *= friction;
+                        
+                        if (Math.abs(velY) < 30 && Math.abs(velX) < 30) {
+                            isAnimating = false;
+                            velY = 0;
+                            velX = 0;
+                        }
+                    }
+                    
+                    fragment.style.left = posX + 'px';
+                    fragment.style.top = posY + 'px';
+                    fragment.style.transform = `rotate(${rotation}deg)`;
+                    
+                    if (isAnimating) {
+                        requestAnimationFrame(animate);
+                    }
+                }
+            };
+            
+            const delay = randomRange(0, 100);
+            setTimeout(() => {
+                requestAnimationFrame(animate);
+            }, delay);
+            
+            document.body.appendChild(fragment);
+            allFragments.push(fragment);
+        }
+    }
+    
+    cleanupOldFragments();
+}
+
+function createGlassFragmentsFallback(imageElement, clickX, clickY, tool) {
+    const rect = imageElement.getBoundingClientRect();
     const numFragments = 80;
     
     for (let i = 0; i < numFragments; i++) {
@@ -600,136 +880,10 @@ function createGlassFragments(imageElement, clickX, clickY, tool) {
         }, delay);
         
         document.body.appendChild(fragment);
-        fragments.push(fragment);
         allFragments.push(fragment);
     }
     
     cleanupOldFragments();
-    
-    return fragments;
-}
-
-function createCrack(clickX, clickY, crackType) {
-    const container = document.getElementById('image-display');
-    const img = document.getElementById('current-image');
-    const imgRect = img.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-    
-    const relativeX = clickX - imgRect.left;
-    const relativeY = clickY - imgRect.top;
-    
-    const imgWidth = imgRect.width;
-    const imgHeight = imgRect.height;
-    
-    if (relativeX < 0 || relativeX > imgWidth || relativeY < 0 || relativeY > imgHeight) {
-        return;
-    }
-    
-    const margin = 0.125;
-    const minX = imgWidth * margin;
-    const maxX = imgWidth * (1 - margin);
-    const minY = imgHeight * margin;
-    const maxY = imgHeight * (1 - margin);
-    
-    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const crackColor = isDarkMode ? '#000000' : '#FFFFFF';
-    
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.style.position = 'absolute';
-    svg.style.top = (imgRect.top - containerRect.top) + 'px';
-    svg.style.left = (imgRect.left - containerRect.left) + 'px';
-    svg.style.width = imgWidth + 'px';
-    svg.style.height = imgHeight + 'px';
-    svg.style.pointerEvents = 'none';
-    svg.style.zIndex = '10';
-    svg.style.transition = 'transform 0.1s ease-out';
-    svg.setAttribute('viewBox', `0 0 ${imgWidth} ${imgHeight}`);
-    
-    let numBranches, strokeWidth, segmentLength, segments;
-    
-    if (crackType === 'light') {
-        numBranches = Math.floor(randomRange(3, 5));
-        strokeWidth = randomRange(1.2, 1.5);
-        segmentLength = randomRange(25, 45);
-        segments = Math.floor(randomRange(8, 12));
-    } else {
-        numBranches = Math.floor(randomRange(6, 10));
-        strokeWidth = randomRange(1.6, 1.9);
-        segmentLength = randomRange(35, 65);
-        segments = Math.floor(randomRange(12, 18));
-    }
-    
-    for (let i = 0; i < numBranches; i++) {
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        
-        let pathData = `M ${relativeX} ${relativeY}`;
-        
-        const baseAngle = (i / numBranches) * 360 + randomRange(-30, 30);
-        let currentX = relativeX;
-        let currentY = relativeY;
-        let currentAngle = baseAngle;
-        
-        for (let j = 0; j < segments; j++) {
-            const currentSegmentLength = segmentLength * (1 - j / segments * 0.3);
-            
-            currentAngle += randomRange(-25, 25);
-            
-            const radians = (currentAngle * Math.PI) / 180;
-            let nextX = currentX + Math.cos(radians) * currentSegmentLength;
-            let nextY = currentY + Math.sin(radians) * currentSegmentLength;
-            
-            nextX = Math.max(minX, Math.min(maxX, nextX));
-            nextY = Math.max(minY, Math.min(maxY, nextY));
-            
-            let controlX = (currentX + nextX) / 2 + randomRange(-5, 5);
-            let controlY = (currentY + nextY) / 2 + randomRange(-5, 5);
-            
-            controlX = Math.max(minX, Math.min(maxX, controlX));
-            controlY = Math.max(minY, Math.min(maxY, controlY));
-            
-            pathData += ` Q ${controlX} ${controlY} ${nextX} ${nextY}`;
-            
-            if (nextX === minX || nextX === maxX || nextY === minY || nextY === maxY) {
-                break;
-            }
-            
-            currentX = nextX;
-            currentY = nextY;
-            
-            const branchChance = crackType === 'light' ? 0.25 : 0.4;
-            if (Math.random() < branchChance && j > 2 && j < segments - 2) {
-                const branchAngle = currentAngle + randomRange(-70, 70);
-                const branchLength = randomRange(20, 40);
-                const branchRad = (branchAngle * Math.PI) / 180;
-                let branchX = currentX + Math.cos(branchRad) * branchLength;
-                let branchY = currentY + Math.sin(branchRad) * branchLength;
-                
-                branchX = Math.max(minX, Math.min(maxX, branchX));
-                branchY = Math.max(minY, Math.min(maxY, branchY));
-                
-                pathData += ` M ${currentX} ${currentY} L ${branchX} ${branchY}`;
-                pathData += ` M ${currentX} ${currentY}`;
-            }
-        }
-        
-        path.setAttribute('d', pathData);
-        path.setAttribute('stroke', crackColor);
-        path.setAttribute('stroke-width', strokeWidth);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke-linecap', 'round');
-        path.setAttribute('stroke-linejoin', 'round');
-        path.setAttribute('opacity', '1');
-        
-        svg.appendChild(path);
-    }
-    
-    container.appendChild(svg);
-}
-
-function clearCracks() {
-    const container = document.getElementById('image-display');
-    const cracks = container.querySelectorAll('svg');
-    cracks.forEach(crack => crack.remove());
 }
 
 let lastClickPosition = { x: 0, y: 0 };
@@ -768,12 +922,12 @@ function attackImage(event) {
     
     updateHealthBar();
     
-if (currentHealth <= 0) {
+    if (currentHealth <= 0) {
         isImageBreaking = true;
         
         setTimeout(() => {
             clearCracks();
-            createGlassFragments(img, lastClickPosition.x, lastClickPosition.y, selectedTool);
+            createFragmentsFromCracks(img, selectedTool);
             
             img.style.transition = 'none';
             img.style.opacity = '0';
