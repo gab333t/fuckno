@@ -68,6 +68,10 @@
         </div>
     </div>
 
+    <div class="box-queue-container" id="box-queue-container">
+        <div class="box-queue" id="box-queue"></div>
+    </div>
+
     <div class="results-container" id="results-container">
         <h2 class="body-text results-title">RAGE ROOM COMPLETE</h2>
         <div class="results-stats">
@@ -202,6 +206,7 @@ updateAboutText();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
     setFavicon();
     updateAboutText();
+    updateBoxQueueTheme();
 });
 
 window.addEventListener('resize', updateAboutText);
@@ -342,6 +347,84 @@ let maxHealth = 20;
 let canAttack = true;
 let totalDestroyed = 0;
 
+function initializeBoxQueue() {
+    const queueContainer = document.getElementById('box-queue');
+    queueContainer.innerHTML = '';
+    
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = isDarkMode ? 'dark' : 'light';
+    
+    imageQueue.forEach((_, index) => {
+        const box = document.createElement('div');
+        box.className = 'queue-box';
+        box.dataset.index = index;
+        
+        const img = document.createElement('img');
+        img.src = `img/box_${theme}.png`;
+        img.alt = 'Queue box';
+        
+        box.appendChild(img);
+        queueContainer.appendChild(box);
+    });
+}
+
+function updateBoxQueueTheme() {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = isDarkMode ? 'dark' : 'light';
+    
+    const boxes = document.querySelectorAll('.queue-box img');
+    boxes.forEach(img => {
+        img.src = `img/box_${theme}.png`;
+    });
+}
+
+function animateBoxTransition() {
+    const queueContainer = document.getElementById('box-queue');
+    const boxes = queueContainer.querySelectorAll('.queue-box');
+    
+    if (boxes.length === 0) return;
+    
+    const firstBox = boxes[0];
+    const currentImage = document.getElementById('current-image');
+    const imageRect = currentImage.getBoundingClientRect();
+    const boxRect = firstBox.getBoundingClientRect();
+    
+    const animatingBox = firstBox.cloneNode(true);
+    animatingBox.classList.add('animating');
+    document.body.appendChild(animatingBox);
+    
+    animatingBox.style.left = boxRect.left + 'px';
+    animatingBox.style.top = boxRect.top + 'px';
+    animatingBox.style.width = boxRect.width + 'px';
+    animatingBox.style.height = boxRect.height + 'px';
+    
+    firstBox.remove();
+    
+    const remainingBoxes = queueContainer.querySelectorAll('.queue-box');
+    const boxWidth = 100;
+    const gap = 20;
+    const shiftAmount = boxWidth + gap;
+    
+    const currentTransform = queueContainer.style.transform || 'translateX(0px)';
+    const currentX = parseFloat(currentTransform.match(/translateX\(([^)]+)px\)/)?.[1] || 0);
+    const newX = currentX - shiftAmount;
+    
+    queueContainer.style.transform = `translateX(${newX}px)`;
+    
+    requestAnimationFrame(() => {
+        animatingBox.style.transition = 'all 0.8s ease';
+        animatingBox.style.left = imageRect.left + 'px';
+        animatingBox.style.top = imageRect.top + 'px';
+        animatingBox.style.width = imageRect.width + 'px';
+        animatingBox.style.height = imageRect.height + 'px';
+        animatingBox.style.opacity = '0';
+        
+        setTimeout(() => {
+            animatingBox.remove();
+        }, 800);
+    });
+}
+
 function loadNextImage() {
     if (imageQueue.length === 0) {
         endGame();
@@ -426,7 +509,6 @@ function sign(x) {
 let allFragments = [];
 const MAX_FRAGMENTS = 200;
 
-// Store fragment animation data so we can update ground position on resize
 let fragmentAnimations = new Map();
 
 function cleanupOldFragments() {
@@ -439,7 +521,6 @@ function cleanupOldFragments() {
                 fragment.style.transition = 'opacity 0.5s ease-out';
                 fragment.style.opacity = '0';
                 
-                // Clean up animation data
                 fragmentAnimations.delete(fragment);
                 
                 setTimeout(() => {
@@ -454,19 +535,16 @@ function cleanupOldFragments() {
     }
 }
 
-// Update ground position for all fragments when window is resized
 window.addEventListener('resize', () => {
     fragmentAnimations.forEach((data, fragment) => {
         const newGroundY = window.innerHeight - fragment.height;
         const oldGroundY = data.groundY;
         data.groundY = newGroundY;
         
-        // If fragment was settled on the old ground, move it to the new ground
         if (!data.isAnimating && data.posY >= oldGroundY - 5) {
             data.posY = newGroundY;
             fragment.style.top = data.posY + 'px';
         }
-        // If fragment is falling and below new ground, adjust position
         else if (data.posY > newGroundY) {
             data.posY = newGroundY;
             fragment.style.top = data.posY + 'px';
@@ -547,7 +625,6 @@ function createSmallFragments(imageElement, clickX, clickY) {
         let rotation = randomRange(0, 360);
         let isAnimating = true;
         
-        // Store animation data for this fragment
         const animationData = {
             posX, posY, velX, velY, rotation,
             gravity, friction, rotationSpeed,
@@ -601,7 +678,6 @@ function createSmallFragments(imageElement, clickX, clickY) {
     cleanupOldFragments();
 }
 
-// Store crack paths for fragmenting the image later
 let crackPaths = [];
 
 function createCrack(clickX, clickY, crackType) {
@@ -823,7 +899,6 @@ function createFragmentsFromCracks(imageElement, tool) {
             let rotation = randomRange(0, 360);
             let isAnimating = true;
             
-            // Store animation data for this fragment
             const animationData = {
                 posX, posY, velX, velY, rotation,
                 gravity, friction, rotationSpeed,
@@ -957,7 +1032,6 @@ function createGlassFragmentsFallback(imageElement, clickX, clickY, tool) {
         let rotation = randomRange(0, 360);
         let isAnimating = true;
         
-        // Store animation data for this fragment
         const animationData = {
             posX, posY, velX, velY, rotation,
             gravity, friction, rotationSpeed,
@@ -1063,6 +1137,8 @@ function attackImage(event) {
             imageQueue.shift();
             totalDestroyed++;
             
+            animateBoxTransition();
+            
             if (imageQueue.length > 0) {
                 setTimeout(() => {
                     img.style.transition = 'transform 0.1s ease-out, opacity 0.3s ease';
@@ -1110,6 +1186,7 @@ function endGame() {
     document.getElementById('final-rank').textContent = getRank(finalTime, totalDestroyed);
     
     document.getElementById('game-container').classList.remove('visible');
+    document.getElementById('box-queue-container').classList.remove('visible');
     document.querySelector('.timer').classList.remove('visible');
     document.querySelector('.current-label').classList.remove('visible');
     document.querySelector('.bottom-marquee-container').classList.remove('visible');
@@ -1122,11 +1199,13 @@ document.getElementById('start-button').addEventListener('click', () => {
     document.querySelector('.bottom-marquee-container').classList.add('visible');
     document.getElementById('instructions-container').classList.remove('visible');
     document.getElementById('game-container').classList.add('visible');
+    document.getElementById('box-queue-container').classList.add('visible');
     
     startTime = Date.now();
     timerInterval = setInterval(updateTimer, 10);
     updateTimer();
     
+    initializeBoxQueue();
     loadNextImage();
     setImageCursor();
 });
