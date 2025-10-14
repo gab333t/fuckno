@@ -209,7 +209,10 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
     updateBoxQueueTheme();
 });
 
-window.addEventListener('resize', updateAboutText);
+window.addEventListener('resize', () => {
+    updateAboutText();
+    updateBoxQueuePosition();
+});
 
 let titleIndex = 0;
 const titles = ['FUCK NO', 'RAGE ROOM'];
@@ -354,14 +357,17 @@ function initializeBoxQueue() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
     
-    imageQueue.forEach((_, index) => {
+    imageQueue.forEach((imageNumber, index) => {
+        if (index === 0) return;
+        
         const box = document.createElement('div');
         box.className = 'queue-box';
         box.dataset.index = index;
+        box.dataset.imageNumber = imageNumber;
         
         const img = document.createElement('img');
-        img.src = `img/box_${theme}.png`;
-        img.alt = 'Queue box';
+        img.src = `img/no${imageNumber}_${theme}.webp`;
+        img.alt = `Queue preview ${imageNumber}`;
         
         box.appendChild(img);
         queueContainer.appendChild(box);
@@ -372,9 +378,13 @@ function updateBoxQueueTheme() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = isDarkMode ? 'dark' : 'light';
     
-    const boxes = document.querySelectorAll('.queue-box img');
-    boxes.forEach(img => {
-        img.src = `img/box_${theme}.png`;
+    const boxes = document.querySelectorAll('.queue-box');
+    boxes.forEach(box => {
+        const imageNumber = box.dataset.imageNumber;
+        const img = box.querySelector('img');
+        if (imageNumber) {
+            img.src = `img/no${imageNumber}_${theme}.webp`;
+        }
     });
 }
 
@@ -398,18 +408,13 @@ function animateBoxTransition() {
     animatingBox.style.width = boxRect.width + 'px';
     animatingBox.style.height = boxRect.height + 'px';
     
-    firstBox.remove();
+    firstBox.style.width = '0px';
+    firstBox.style.marginRight = '-30px';
+    firstBox.style.opacity = '0';
     
-    const remainingBoxes = queueContainer.querySelectorAll('.queue-box');
-    const boxWidth = 100;
-    const gap = 20;
-    const shiftAmount = boxWidth + gap;
-    
-    const currentTransform = queueContainer.style.transform || 'translateX(0px)';
-    const currentX = parseFloat(currentTransform.match(/translateX\(([^)]+)px\)/)?.[1] || 0);
-    const newX = currentX - shiftAmount;
-    
-    queueContainer.style.transform = `translateX(${newX}px)`;
+    setTimeout(() => {
+        firstBox.remove();
+    }, 800);
     
     requestAnimationFrame(() => {
         animatingBox.style.transition = 'all 0.8s ease';
@@ -417,7 +422,11 @@ function animateBoxTransition() {
         animatingBox.style.top = imageRect.top + 'px';
         animatingBox.style.width = imageRect.width + 'px';
         animatingBox.style.height = imageRect.height + 'px';
-        animatingBox.style.opacity = '0';
+        
+        const img = animatingBox.querySelector('img');
+        if (img) {
+            img.style.filter = 'none';
+        }
         
         setTimeout(() => {
             animatingBox.remove();
@@ -436,8 +445,17 @@ function loadNextImage() {
     const theme = isDarkMode ? 'dark' : 'light';
     
     const currentImage = document.getElementById('current-image');
+    
+    currentImage.style.filter = 'grayscale(100%) contrast(1000%) brightness(1000%)';
+    
     currentImage.src = `img/no${imageNumber}_${theme}.webp`;
     currentImage.alt = `NO sign ${imageNumber}`;
+    
+    currentImage.onload = () => {
+        setTimeout(() => {
+            currentImage.style.filter = 'none';
+        }, 100);
+    };
     
     const labelElement = document.querySelector('.current-label');
     const fullLabel = labels[imageNumber - 1];
@@ -448,6 +466,23 @@ function loadNextImage() {
     updateHealthBar();
     updateImageNumber();
     clearCracks();
+    
+    updateBoxQueuePosition();
+}
+
+function updateBoxQueuePosition() {
+    const imageDisplay = document.getElementById('image-display');
+    const queueContainer = document.getElementById('box-queue-container');
+    
+    if (!imageDisplay || !queueContainer) return;
+    
+    requestAnimationFrame(() => {
+        const imageRect = imageDisplay.getBoundingClientRect();
+        const imageCenterY = imageRect.top + (imageRect.height / 2);
+        
+        queueContainer.style.top = imageCenterY + 'px';
+        queueContainer.style.transform = 'translateY(-50%)';
+    });
 }
 
 function updateHealthBar() {
@@ -484,6 +519,7 @@ function shakeImage() {
         cracks.forEach(crack => {
             crack.style.transform = 'translate(0, 0)';
         });
+        updateBoxQueuePosition();
     }, 100);
 }
 
@@ -550,6 +586,8 @@ window.addEventListener('resize', () => {
             fragment.style.top = data.posY + 'px';
         }
     });
+    
+    updateBoxQueuePosition();
 });
 
 function createSmallFragments(imageElement, clickX, clickY) {
@@ -1132,26 +1170,29 @@ function attackImage(event) {
             createFragmentsFromCracks(img, selectedTool);
             
             img.style.transition = 'none';
-            img.style.opacity = '0';
+            img.style.visibility = 'hidden';
             
             imageQueue.shift();
             totalDestroyed++;
             
-            animateBoxTransition();
+            setTimeout(() => {
+                animateBoxTransition();
+            }, 960);
             
             if (imageQueue.length > 0) {
                 setTimeout(() => {
-                    img.style.transition = 'transform 0.1s ease-out, opacity 0.3s ease';
-                    img.style.opacity = '1';
+                    img.style.visibility = 'visible';
+                    img.style.transition = 'filter 0.3s ease';
                     lightCracksShown = false;
                     heavyCracksShown = false;
                     isImageBreaking = false;
                     loadNextImage();
-                }, 800);
+                    setTimeout(updateBoxQueuePosition, 350);
+                }, 1684);
             } else {
                 setTimeout(() => {
                     endGame();
-                }, 800);
+                }, 1600);
             }
         }, 100);
     }
@@ -1208,6 +1249,8 @@ document.getElementById('start-button').addEventListener('click', () => {
     initializeBoxQueue();
     loadNextImage();
     setImageCursor();
+    
+    setTimeout(updateBoxQueuePosition, 100);
 });
 
 document.getElementById('current-image').addEventListener('click', attackImage);
