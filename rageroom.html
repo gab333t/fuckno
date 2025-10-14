@@ -21,7 +21,7 @@
     </div>
 
     <div class="tool-selection-container" id="tool-selection">
-        <h2 class="body-text">Select your tool.</h2>
+        <h2 class="body-text">SELECT YOUR TOOL:</h2>
         <div class="tool-container">
             <img src="img/rock.webp" alt="Rock icon." data-tool="rock">
             <img src="img/sledgehammer.webp" alt="Sledgehammer icon." data-tool="sledgehammer">
@@ -30,8 +30,8 @@
         
         <div class="tool-descriptions">
             <h2 class="body-text tool-description" id="rock-desc">ROCK<br>Deals 3 damage with a 0.1 second cooldown.</h2>
-            <h2 class="body-text tool-description" id="sledgehammer-desc">SLEDGEHAMMER<br>Deals 5 damage with a 0.6 second cooldown.</h2>
-            <h2 class="body-text tool-description" id="dynamite-desc">DYNAMITE<br>Deals 8 damage with a 1 second cooldown.</h2>
+            <h2 class="body-text tool-description" id="sledgehammer-desc">SLEDGEHAMMER<br>Deals 5 damage with a 0.3 second cooldown.</h2>
+            <h2 class="body-text tool-description" id="dynamite-desc">DYNAMITE<br>Deals 8 damage with a 0.5 second cooldown.</h2>
         </div>
     </div>
 
@@ -160,8 +160,8 @@ let currentImageIndex = 0;
 let imageQueue = selectedImages ? [...selectedImages] : [];
 const toolStats = {
     rock: { damage: 3, cooldown: 100 },
-    sledgehammer: { damage: 5, cooldown: 600 },
-    dynamite: { damage: 8, cooldown: 1000 }
+    sledgehammer: { damage: 5, cooldown: 300 },
+    dynamite: { damage: 8, cooldown: 500 }
 };
 
 function createAudioPool(tool, filename) {
@@ -279,6 +279,7 @@ function loadNextImage() {
     currentHealth = maxHealth;
     updateHealthBar();
     updateRemainingCount();
+    clearCracks();
 }
 
 function updateHealthBar() {
@@ -293,13 +294,27 @@ function updateRemainingCount() {
 
 function shakeImage() {
     const img = document.getElementById('current-image');
-    const randomX = (Math.random() - 0.5) * 10;
-    const randomY = (Math.random() - 0.5) * 10;
+    const container = document.getElementById('image-display');
     
+    // Determine shake intensity based on selected tool
+    const shakeMultiplier = selectedTool === 'dynamite' ? 2.5 : 1;
+    const randomX = (Math.random() - 0.5) * 10 * shakeMultiplier;
+    const randomY = (Math.random() - 0.5) * 10 * shakeMultiplier;
+    
+    // Shake the image
     img.style.transform = `translate(${randomX}px, ${randomY}px)`;
+    
+    // Shake all crack SVGs
+    const cracks = container.querySelectorAll('svg');
+    cracks.forEach(crack => {
+        crack.style.transform = `translate(${randomX}px, ${randomY}px)`;
+    });
     
     setTimeout(() => {
         img.style.transform = 'translate(0, 0)';
+        cracks.forEach(crack => {
+            crack.style.transform = 'translate(0, 0)';
+        });
     }, 100);
 }
 
@@ -347,7 +362,130 @@ function cleanupOldFragments() {
     }
 }
 
-function createGlassFragments(imageElement, clickX, clickY) {
+function createSmallFragments(imageElement, clickX, clickY) {
+    const rect = imageElement.getBoundingClientRect();
+    
+    // Create 2-4 small fragments
+    const numFragments = Math.floor(randomRange(2, 5));
+    
+    for (let i = 0; i < numFragments; i++) {
+        const fragment = document.createElement('canvas');
+        const ctx = fragment.getContext('2d');
+        
+        // Start position close to click location
+        const startX = clickX + randomRange(-30, 30);
+        const startY = clickY + randomRange(-30, 30);
+        
+        // Small fragment size
+        const size = randomRange(5, 15);
+        const points = [];
+        const numPoints = Math.floor(randomRange(3, 5));
+        
+        for (let j = 0; j < numPoints; j++) {
+            const pointAngle = (j / numPoints) * TWO_PI;
+            const pointRadius = size * randomRange(0.5, 1);
+            points.push({
+                x: Math.cos(pointAngle) * pointRadius,
+                y: Math.sin(pointAngle) * pointRadius
+            });
+        }
+        
+        const minX = Math.min(...points.map(p => p.x));
+        const maxX = Math.max(...points.map(p => p.x));
+        const minY = Math.min(...points.map(p => p.y));
+        const maxY = Math.max(...points.map(p => p.y));
+        const width = maxX - minX;
+        const height = maxY - minY;
+        
+        fragment.width = width;
+        fragment.height = height;
+        fragment.style.width = width + 'px';
+        fragment.style.height = height + 'px';
+        fragment.style.position = 'fixed';
+        fragment.style.pointerEvents = 'none';
+        fragment.style.zIndex = '500';
+        
+        ctx.save();
+        ctx.translate(-minX, -minY);
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let j = 1; j < points.length; j++) {
+            ctx.lineTo(points[j].x, points[j].y);
+        }
+        ctx.closePath();
+        ctx.clip();
+        
+        const relativeX = startX - rect.left;
+        const relativeY = startY - rect.top;
+        const imgX = -relativeX - minX;
+        const imgY = -relativeY - minY;
+        ctx.drawImage(imageElement, imgX, imgY, rect.width, rect.height);
+        ctx.restore();
+        
+        // Small, quick burst velocities
+        const angle = randomRange(0, TWO_PI);
+        const speed = randomRange(50, 150);
+        const velocityX = Math.cos(angle) * speed;
+        const velocityY = Math.sin(angle) * speed - randomRange(100, 200); // Extra upward bias
+        const rotationSpeed = randomRange(-720, 720);
+        
+        const gravity = 800;
+        const friction = 0.6;
+        const groundY = window.innerHeight - height;
+        
+        let posX = startX;
+        let posY = startY;
+        let velX = velocityX;
+        let velY = velocityY;
+        let rotation = randomRange(0, 360);
+        let isAnimating = true;
+        
+        fragment.style.left = posX + 'px';
+        fragment.style.top = posY + 'px';
+        fragment.style.transform = `rotate(${rotation}deg)`;
+        
+        const animate = () => {
+            if (isAnimating) {
+                const deltaTime = 0.016;
+                
+                velY += gravity * deltaTime;
+                
+                posX += velX * deltaTime;
+                posY += velY * deltaTime;
+                rotation += rotationSpeed * deltaTime;
+                
+                if (posY >= groundY) {
+                    posY = groundY;
+                    velY = -velY * friction;
+                    velX *= friction;
+                    
+                    if (Math.abs(velY) < 20 && Math.abs(velX) < 20) {
+                        isAnimating = false;
+                        velY = 0;
+                        velX = 0;
+                    }
+                }
+                
+                fragment.style.left = posX + 'px';
+                fragment.style.top = posY + 'px';
+                fragment.style.transform = `rotate(${rotation}deg)`;
+                
+                if (isAnimating) {
+                    requestAnimationFrame(animate);
+                }
+            }
+        };
+        
+        requestAnimationFrame(animate);
+        
+        document.body.appendChild(fragment);
+        allFragments.push(fragment);
+    }
+    
+    cleanupOldFragments();
+}
+
+function createGlassFragments(imageElement, clickX, clickY, tool) {
     const container = document.getElementById('image-display');
     const rect = imageElement.getBoundingClientRect();
     
@@ -410,8 +548,10 @@ function createGlassFragments(imageElement, clickX, clickY) {
         const dy = startY - (rect.top + rect.height / 2);
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        const velocityX = (dx / Math.max(distance, 1)) * randomRange(100, 250);
-        const velocityY = randomRange(-300, -100);
+        const isDynamite = tool === 'dynamite';
+        const velocityMultiplier = isDynamite ? 2.5 : 1;
+        const velocityX = (dx / Math.max(distance, 1)) * randomRange(100, 250) * velocityMultiplier;
+        const velocityY = randomRange(-300, -100) * velocityMultiplier;
         const rotationSpeed = randomRange(-360, 360);
         
         const gravity = 600;
@@ -476,10 +616,156 @@ function createGlassFragments(imageElement, clickX, clickY) {
     return fragments;
 }
 
+function createCrack(clickX, clickY, crackType) {
+    const container = document.getElementById('image-display');
+    const img = document.getElementById('current-image');
+    const imgRect = img.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    
+    // Calculate click position relative to the actual image element
+    const relativeX = clickX - imgRect.left;
+    const relativeY = clickY - imgRect.top;
+    
+    // Get actual displayed image dimensions from the element itself
+    const imgWidth = imgRect.width;
+    const imgHeight = imgRect.height;
+    
+    // Check if click is outside image bounds
+    if (relativeX < 0 || relativeX > imgWidth || relativeY < 0 || relativeY > imgHeight) {
+        return;
+    }
+    
+    // Calculate 75% inset boundary (12.5% margin on each side)
+    const margin = 0.125; // 12.5% margin = 75% usable area
+    const minX = imgWidth * margin;
+    const maxX = imgWidth * (1 - margin);
+    const minY = imgHeight * margin;
+    const maxY = imgHeight * (1 - margin);
+    
+    // Determine crack color based on theme (black in light, white in dark)
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const crackColor = isDarkMode ? '#000000' : '#FFFFFF';
+    
+    // Create SVG positioned EXACTLY over the image, not the container
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.style.position = 'absolute';
+    svg.style.top = (imgRect.top - containerRect.top) + 'px';
+    svg.style.left = (imgRect.left - containerRect.left) + 'px';
+    svg.style.width = imgWidth + 'px';
+    svg.style.height = imgHeight + 'px';
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '10';
+    svg.style.transition = 'transform 0.1s ease-out';
+    svg.setAttribute('viewBox', `0 0 ${imgWidth} ${imgHeight}`);
+    
+    // Determine crack properties based on type - THIN LINES
+    let numBranches, strokeWidth, segmentLength, segments;
+    
+    if (crackType === 'light') {
+        // Light cracks: fewer branches, very thin lines, longer reach
+        numBranches = Math.floor(randomRange(3, 5));
+        strokeWidth = randomRange(1.2, 1.5);
+        segmentLength = randomRange(25, 45);
+        segments = Math.floor(randomRange(8, 12));
+    } else {
+        // Heavy cracks: more branches, thin lines, longer reach
+        numBranches = Math.floor(randomRange(6, 10));
+        strokeWidth = randomRange(1.6, 1.9);
+        segmentLength = randomRange(35, 65);
+        segments = Math.floor(randomRange(12, 18));
+    }
+    
+    for (let i = 0; i < numBranches; i++) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        
+        // Starting point is the click location (already in image coordinates)
+        let pathData = `M ${relativeX} ${relativeY}`;
+        
+        // Random initial angle for this branch
+        const baseAngle = (i / numBranches) * 360 + randomRange(-30, 30);
+        let currentX = relativeX;
+        let currentY = relativeY;
+        let currentAngle = baseAngle;
+        
+        // Create segments for this crack branch
+        for (let j = 0; j < segments; j++) {
+            // Length tapers off less dramatically for more sprawl
+            const currentSegmentLength = segmentLength * (1 - j / segments * 0.3);
+            
+            // Less angle variation for straighter cracks
+            currentAngle += randomRange(-25, 25);
+            
+            const radians = (currentAngle * Math.PI) / 180;
+            let nextX = currentX + Math.cos(radians) * currentSegmentLength;
+            let nextY = currentY + Math.sin(radians) * currentSegmentLength;
+            
+            // Clamp to 75% boundary
+            nextX = Math.max(minX, Math.min(maxX, nextX));
+            nextY = Math.max(minY, Math.min(maxY, nextY));
+            
+            // Less control point variation for smoother cracks
+            let controlX = (currentX + nextX) / 2 + randomRange(-5, 5);
+            let controlY = (currentY + nextY) / 2 + randomRange(-5, 5);
+            
+            // Clamp control points too
+            controlX = Math.max(minX, Math.min(maxX, controlX));
+            controlY = Math.max(minY, Math.min(maxY, controlY));
+            
+            pathData += ` Q ${controlX} ${controlY} ${nextX} ${nextY}`;
+            
+            // Stop if we hit the boundary
+            if (nextX === minX || nextX === maxX || nextY === minY || nextY === maxY) {
+                break;
+            }
+            
+            currentX = nextX;
+            currentY = nextY;
+            
+            // More branching for better sprawl
+            const branchChance = crackType === 'light' ? 0.25 : 0.4;
+            if (Math.random() < branchChance && j > 2 && j < segments - 2) {
+                const branchAngle = currentAngle + randomRange(-70, 70);
+                const branchLength = randomRange(20, 40);
+                const branchRad = (branchAngle * Math.PI) / 180;
+                let branchX = currentX + Math.cos(branchRad) * branchLength;
+                let branchY = currentY + Math.sin(branchRad) * branchLength;
+                
+                // Clamp branch to 75% boundary
+                branchX = Math.max(minX, Math.min(maxX, branchX));
+                branchY = Math.max(minY, Math.min(maxY, branchY));
+                
+                pathData += ` M ${currentX} ${currentY} L ${branchX} ${branchY}`;
+                pathData += ` M ${currentX} ${currentY}`;
+            }
+        }
+        
+        path.setAttribute('d', pathData);
+        path.setAttribute('stroke', crackColor);
+        path.setAttribute('stroke-width', strokeWidth);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        path.setAttribute('opacity', '1');
+        
+        svg.appendChild(path);
+    }
+    
+    container.appendChild(svg);
+}
+
+function clearCracks() {
+    const container = document.getElementById('image-display');
+    const cracks = container.querySelectorAll('svg');
+    cracks.forEach(crack => crack.remove());
+}
+
 let lastClickPosition = { x: 0, y: 0 };
+let lightCracksShown = false;
+let heavyCracksShown = false;
+let isImageBreaking = false;
 
 function attackImage(event) {
-    if (!canAttack || imageQueue.length === 0) return;
+    if (!canAttack || imageQueue.length === 0 || isImageBreaking) return;
     
     lastClickPosition.x = event.clientX;
     lastClickPosition.y = event.clientY;
@@ -487,29 +773,63 @@ function attackImage(event) {
     const damage = toolStats[selectedTool].damage;
     currentHealth -= damage;
     
+    // Clamp health to 0 if it goes negative
+    if (currentHealth < 0) currentHealth = 0;
+    
     playToolSound(selectedTool);
     shakeImage();
+    
+    // Create small fragments on every click
+    const img = document.getElementById('current-image');
+    createSmallFragments(img, lastClickPosition.x, lastClickPosition.y);
+    
+    // Calculate health percentage
+    const healthPercent = (currentHealth / maxHealth) * 100;
+    
+    // Show light cracks at 70% health
+    if (healthPercent <= 70 && !lightCracksShown) {
+        createCrack(lastClickPosition.x, lastClickPosition.y, 'light');
+        lightCracksShown = true;
+    }
+    
+    // Show heavy cracks at 30% health
+    if (healthPercent <= 30 && !heavyCracksShown) {
+        createCrack(lastClickPosition.x, lastClickPosition.y, 'heavy');
+        heavyCracksShown = true;
+    }
+    
+    // Update health bar BEFORE checking if dead
     updateHealthBar();
     
-    if (currentHealth <= 0) {
-        const img = document.getElementById('current-image');
-        createGlassFragments(img, lastClickPosition.x, lastClickPosition.y);
+if (currentHealth <= 0) {
+        isImageBreaking = true; // Prevent further clicks
         
-        img.style.opacity = '0';
-        
-        imageQueue.shift();
-        totalDestroyed++;
-        
-        if (imageQueue.length > 0) {
-            setTimeout(() => {
-                img.style.opacity = '1';
-                loadNextImage();
-            }, 800);
-        } else {
-            setTimeout(() => {
-                endGame();
-            }, 800);
-        }
+        // Small delay to let the health bar animation complete
+        setTimeout(() => {
+            clearCracks();
+            createGlassFragments(img, lastClickPosition.x, lastClickPosition.y, selectedTool);
+            
+            img.style.transition = 'none';
+            img.style.opacity = '0';
+            
+            imageQueue.shift();
+            totalDestroyed++;
+            
+            if (imageQueue.length > 0) {
+                setTimeout(() => {
+                    img.style.transition = 'transform 0.1s ease-out, opacity 0.3s ease';
+                    img.style.opacity = '1';
+                    lightCracksShown = false;
+                    heavyCracksShown = false;
+                    isImageBreaking = false; // Re-enable clicks
+                    loadNextImage();
+                }, 800);
+            } else {
+                setTimeout(() => {
+                    endGame();
+                }, 800);
+            }
+        }, 100);
     }
     
     canAttack = false;
@@ -572,14 +892,12 @@ document.querySelectorAll('.tool-icon').forEach(icon => {
             const toolType = i.dataset.tool;
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
             const mode = isDarkMode ? 'dark' : 'light';
-            
             if (i === icon) {
                 i.src = `img/${toolType}_${mode}.webp`;
             } else {
                 i.src = `img/${toolType}.webp`;
             }
         });
-        
         setImageCursor();
     });
 });
@@ -590,6 +908,10 @@ document.getElementById('restart-button').addEventListener('click', () => {
 
 document.getElementById('return-button').addEventListener('click', () => {
     window.location.href = 'https://gab333t.github.io/fuckno/';
+});
+
+document.getElementById('current-image').addEventListener('contextmenu', (e) => {
+    e.preventDefault();
 });
 </script>
 </body>
