@@ -16,7 +16,7 @@
     </div>
 
     <div class="error-container" id="error-container">
-        <h2 class="body-text error-text">ERROR:<br>Inventory not found.</h2>
+        <h2 class="body-text error-text">ERROR:<br>Inventory not selected.</h2>
         <button class="start-button" id="return-button">RETURN TO INVENTORY</button>
     </div>
 
@@ -29,9 +29,9 @@
         </div>
         
         <div class="tool-descriptions">
-            <h2 class="body-text tool-description" id="rock-desc">ROCK<br>Deals 3 damage with a 1 second cooldown.</h2>
-            <h2 class="body-text tool-description" id="sledgehammer-desc">SLEDGEHAMMER<br>Deals 5 damage with a 2 second cooldown.</h2>
-            <h2 class="body-text tool-description" id="dynamite-desc">DYNAMITE<br>Deals 8 damage with a 3 second cooldown.</h2>
+            <h2 class="body-text tool-description" id="rock-desc">ROCK<br>Deals 3 damage with a 0.1 second cooldown.</h2>
+            <h2 class="body-text tool-description" id="sledgehammer-desc">SLEDGEHAMMER<br>Deals 5 damage with a 0.6 second cooldown.</h2>
+            <h2 class="body-text tool-description" id="dynamite-desc">DYNAMITE<br>Deals 8 damage with a 1 second cooldown.</h2>
         </div>
     </div>
 
@@ -45,12 +45,11 @@
     </div>
 
     <div class="game-container" id="game-container">
-        <div class="image-display">
+        <div class="image-display" id="image-display">
             <img id="current-image" src="" alt="Current NO sign">
             <div class="health-bar-container">
                 <div class="health-bar" id="health-bar"></div>
             </div>
-            <div class="damage-indicator" id="damage-indicator"></div>
         </div>
         
         <div class="game-info">
@@ -88,7 +87,10 @@
 
     <h2 class="timer">00:00</h2>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
+const TWO_PI = Math.PI * 2;
+
 function setFavicon() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const faviconPath = isDarkMode ? 'img/favicon_dark.svg' : 'img/favicon_light.svg';
@@ -139,20 +141,57 @@ function getSelectedImages() {
         return selected.split(',').map(num => parseInt(num));
     }
     
-    return Array.from({length: 76}, (_, i) => i + 1);
+    return null;
 }
 
 const selectedImages = getSelectedImages();
-let currentImageIndex = 0;
-let imageQueue = [...selectedImages];
+
+if (selectedImages === null) {
+    document.getElementById('error-container').classList.add('visible');
+    document.getElementById('tool-selection').style.display = 'none';
+} else {
+    let currentImageIndex = 0;
+    let imageQueue = [...selectedImages];
+}
 
 const toolImages = document.querySelectorAll('.tool-container img');
 let selectedTool = null;
+let currentImageIndex = 0;
+let imageQueue = selectedImages ? [...selectedImages] : [];
 const toolStats = {
-    rock: { damage: 3, cooldown: 1000 },
-    sledgehammer: { damage: 5, cooldown: 2000 },
-    dynamite: { damage: 8, cooldown: 3000 }
+    rock: { damage: 3, cooldown: 100 },
+    sledgehammer: { damage: 5, cooldown: 600 },
+    dynamite: { damage: 8, cooldown: 1000 }
 };
+
+function createAudioPool(tool, filename) {
+    return [
+        `audio/${filename}1.mp3`,
+        `audio/${filename}2.mp3`,
+        `audio/${filename}3.mp3`
+    ];
+}
+
+const audioFiles = {
+    rock: createAudioPool('rock', 'rock'),
+    sledgehammer: createAudioPool('sledgehammer', 'glass'),
+    dynamite: createAudioPool('dynamite', 'explode')
+};
+
+function playToolSound(tool) {
+    const sounds = audioFiles[tool];
+    if (sounds) {
+        const randomIndex = Math.floor(Math.random() * 3);
+        const audioPath = sounds[randomIndex];
+        
+        const audio = new Audio(audioPath);
+        audio.volume = 0.7;
+        audio.play().catch(err => {
+            console.log(`Audio play failed for ${tool}:`, err);
+            console.log('Attempted path:', audioPath);
+        });
+    }
+}
 
 toolImages.forEach(img => {
     const originalSrc = img.src;
@@ -252,35 +291,224 @@ function updateRemainingCount() {
     document.getElementById('images-remaining').textContent = imageQueue.length;
 }
 
-function showDamage(damage) {
-    const indicator = document.getElementById('damage-indicator');
-    indicator.textContent = `-${damage}`;
-    indicator.classList.add('show');
+function shakeImage() {
+    const img = document.getElementById('current-image');
+    const randomX = (Math.random() - 0.5) * 10;
+    const randomY = (Math.random() - 0.5) * 10;
+    
+    img.style.transform = `translate(${randomX}px, ${randomY}px)`;
     
     setTimeout(() => {
-        indicator.classList.remove('show');
-    }, 500);
+        img.style.transform = 'translate(0, 0)';
+    }, 100);
 }
 
-function attackImage() {
+function setImageCursor() {
+    const img = document.getElementById('current-image');
+    if (selectedTool) {
+        img.style.cursor = `url('img/${selectedTool}_cursor.ico'), auto`;
+    }
+}
+
+function randomRange(min, max) {
+    return min + (max - min) * Math.random();
+}
+
+function clamp(x, min, max) {
+    return x < min ? min : (x > max ? max : x);
+}
+
+function sign(x) {
+    return x < 0 ? -1 : 1;
+}
+
+let allFragments = [];
+const MAX_FRAGMENTS = 200;
+
+function cleanupOldFragments() {
+    if (allFragments.length > MAX_FRAGMENTS) {
+        const fragmentsToRemove = allFragments.length - MAX_FRAGMENTS;
+        
+        for (let i = 0; i < fragmentsToRemove; i++) {
+            const fragment = allFragments[i];
+            if (fragment && fragment.parentNode) {
+                fragment.style.transition = 'opacity 0.5s ease-out';
+                fragment.style.opacity = '0';
+                
+                setTimeout(() => {
+                    if (fragment.parentNode) {
+                        fragment.parentNode.removeChild(fragment);
+                    }
+                }, 500);
+            }
+        }
+        
+        allFragments.splice(0, fragmentsToRemove);
+    }
+}
+
+function createGlassFragments(imageElement, clickX, clickY) {
+    const container = document.getElementById('image-display');
+    const rect = imageElement.getBoundingClientRect();
+    
+    const fragments = [];
+    const numFragments = 80;
+    
+    for (let i = 0; i < numFragments; i++) {
+        const fragment = document.createElement('canvas');
+        const ctx = fragment.getContext('2d');
+        
+        const startX = rect.left + randomRange(0, rect.width);
+        const startY = rect.top + randomRange(0, rect.height);
+        
+        const size = randomRange(15, 45);
+        const points = [];
+        const numPoints = Math.floor(randomRange(3, 6));
+        
+        for (let j = 0; j < numPoints; j++) {
+            const pointAngle = (j / numPoints) * TWO_PI;
+            const pointRadius = size * randomRange(0.5, 1);
+            points.push({
+                x: Math.cos(pointAngle) * pointRadius,
+                y: Math.sin(pointAngle) * pointRadius
+            });
+        }
+        
+        const minX = Math.min(...points.map(p => p.x));
+        const maxX = Math.max(...points.map(p => p.x));
+        const minY = Math.min(...points.map(p => p.y));
+        const maxY = Math.max(...points.map(p => p.y));
+        const width = maxX - minX;
+        const height = maxY - minY;
+        
+        fragment.width = width;
+        fragment.height = height;
+        fragment.style.width = width + 'px';
+        fragment.style.height = height + 'px';
+        fragment.style.position = 'fixed';
+        fragment.style.pointerEvents = 'none';
+        fragment.style.zIndex = '500';
+        
+        ctx.save();
+        ctx.translate(-minX, -minY);
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let j = 1; j < points.length; j++) {
+            ctx.lineTo(points[j].x, points[j].y);
+        }
+        ctx.closePath();
+        ctx.clip();
+        
+        const relativeX = startX - rect.left;
+        const relativeY = startY - rect.top;
+        const imgX = -relativeX - minX;
+        const imgY = -relativeY - minY;
+        ctx.drawImage(imageElement, imgX, imgY, rect.width, rect.height);
+        ctx.restore();
+        
+        const dx = startX - (rect.left + rect.width / 2);
+        const dy = startY - (rect.top + rect.height / 2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        const velocityX = (dx / Math.max(distance, 1)) * randomRange(100, 250);
+        const velocityY = randomRange(-300, -100);
+        const rotationSpeed = randomRange(-360, 360);
+        
+        const gravity = 600;
+        const friction = 0.5;
+        const groundY = window.innerHeight - height;
+        
+        let posX = startX;
+        let posY = startY;
+        let velX = velocityX;
+        let velY = velocityY;
+        let rotation = randomRange(0, 360);
+        let isAnimating = true;
+        
+        fragment.style.left = posX + 'px';
+        fragment.style.top = posY + 'px';
+        fragment.style.transform = `rotate(${rotation}deg)`;
+        
+        const animate = () => {
+            if (isAnimating) {
+                const deltaTime = 0.016;
+                
+                velY += gravity * deltaTime;
+                
+                posX += velX * deltaTime;
+                posY += velY * deltaTime;
+                rotation += rotationSpeed * deltaTime;
+                
+                if (posY >= groundY) {
+                    posY = groundY;
+                    velY = -velY * friction;
+                    velX *= friction;
+                    
+                    if (Math.abs(velY) < 30 && Math.abs(velX) < 30) {
+                        isAnimating = false;
+                        velY = 0;
+                        velX = 0;
+                    }
+                }
+                
+                fragment.style.left = posX + 'px';
+                fragment.style.top = posY + 'px';
+                fragment.style.transform = `rotate(${rotation}deg)`;
+                
+                if (isAnimating) {
+                    requestAnimationFrame(animate);
+                }
+            }
+        };
+        
+        const delay = randomRange(0, 50);
+        setTimeout(() => {
+            requestAnimationFrame(animate);
+        }, delay);
+        
+        document.body.appendChild(fragment);
+        fragments.push(fragment);
+        allFragments.push(fragment);
+    }
+    
+    cleanupOldFragments();
+    
+    return fragments;
+}
+
+let lastClickPosition = { x: 0, y: 0 };
+
+function attackImage(event) {
     if (!canAttack || imageQueue.length === 0) return;
+    
+    lastClickPosition.x = event.clientX;
+    lastClickPosition.y = event.clientY;
     
     const damage = toolStats[selectedTool].damage;
     currentHealth -= damage;
     
-    showDamage(damage);
+    playToolSound(selectedTool);
+    shakeImage();
     updateHealthBar();
     
     if (currentHealth <= 0) {
+        const img = document.getElementById('current-image');
+        createGlassFragments(img, lastClickPosition.x, lastClickPosition.y);
+        
+        img.style.opacity = '0';
+        
         imageQueue.shift();
         totalDestroyed++;
         
         if (imageQueue.length > 0) {
             setTimeout(() => {
+                img.style.opacity = '1';
                 loadNextImage();
-            }, 300);
+            }, 800);
         } else {
-            endGame();
+            setTimeout(() => {
+                endGame();
+            }, 800);
         }
     }
     
@@ -330,6 +558,7 @@ document.getElementById('start-button').addEventListener('click', () => {
     updateTimer();
     
     loadNextImage();
+    setImageCursor();
 });
 
 document.getElementById('current-image').addEventListener('click', attackImage);
@@ -339,12 +568,27 @@ document.querySelectorAll('.tool-icon').forEach(icon => {
         const newTool = icon.dataset.tool;
         selectedTool = newTool;
         
-        document.querySelectorAll('.tool-icon').forEach(i => i.classList.remove('active'));
-        icon.classList.add('active');
+        document.querySelectorAll('.tool-icon').forEach(i => {
+            const toolType = i.dataset.tool;
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const mode = isDarkMode ? 'dark' : 'light';
+            
+            if (i === icon) {
+                i.src = `img/${toolType}_${mode}.webp`;
+            } else {
+                i.src = `img/${toolType}.webp`;
+            }
+        });
+        
+        setImageCursor();
     });
 });
 
 document.getElementById('restart-button').addEventListener('click', () => {
+    window.location.href = 'https://gab333t.github.io/fuckno/';
+});
+
+document.getElementById('return-button').addEventListener('click', () => {
     window.location.href = 'https://gab333t.github.io/fuckno/';
 });
 </script>
