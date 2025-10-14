@@ -410,31 +410,6 @@ function closeImageModal() {
     closeIcon.classList.remove('active');
     document.body.classList.remove('no-scroll');
 }
-
-function preloadImages() {
-    const themes = ['light', 'dark'];
-    const images = [];
-    
-    for (let i = 1; i <= 76; i++) {
-        themes.forEach(theme => {
-            const img = new Image();
-            img.src = `img/no${i}_${theme}.webp`;
-            images.push(img);
-        });
-    }
-    
-    themes.forEach(theme => {
-        const checkbox = new Image();
-        checkbox.src = `img/checkbox_${theme}.svg`;
-        const checkboxChecked = new Image();
-        checkboxChecked.src = `img/checkbox_check_${theme}.svg`;
-        images.push(checkbox, checkboxChecked);
-    });
-}
-
-preloadImages();
-createInventoryGrid();
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateInventoryImages);
 </script>
 </body>
 </html>

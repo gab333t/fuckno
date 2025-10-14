@@ -15,11 +15,19 @@
         </nav>
     </div>
 
-    <h2 class="body-text">Select your tool.</h2>
-    <div class="tool-container">
-        <img src="img/rock.webp" alt="Rock icon.">
-        <img src="img/sledgehammer.webp" alt="Sledgehammer icon.">
-        <img src="img/dynamite.webp" alt="Dynamite icon.">
+    <div class="tool-selection-container">
+        <h2 class="body-text">Select your tool.</h2>
+        <div class="tool-container">
+            <img src="img/rock.webp" alt="Rock icon." data-tool="rock">
+            <img src="img/sledgehammer.webp" alt="Sledgehammer icon." data-tool="sledgehammer">
+            <img src="img/dynamite.webp" alt="Dynamite icon." data-tool="dynamite">
+        </div>
+        
+        <div class="tool-descriptions">
+            <h2 class="body-text tool-description" id="rock-desc">ROCK<br>Deals 3 damage every 1 second.</h2>
+            <h2 class="body-text tool-description" id="sledgehammer-desc">SLEDGEHAMMER<br>Deals 5 damage every 2 seconds.</h2>
+            <h2 class="body-text tool-description" id="dynamite-desc">DYNAMITE<br>Deals 8 damage every 3 seconds.</h2>
+        </div>
     </div>
 
     <div class="bottom-marquee-container">
@@ -29,8 +37,8 @@
         </div>
     </div>
 
+    <h2 class="timer">0:00</h2>
 
-    
 <script>
 function setFavicon() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -79,6 +87,7 @@ const toolImages = document.querySelectorAll('.tool-container img');
 toolImages.forEach(img => {
     const originalSrc = img.src;
     const altText = img.alt;
+    const toolType = img.dataset.tool;
     
     img.addEventListener('mouseenter', () => {
         const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -91,12 +100,40 @@ toolImages.forEach(img => {
         } else if (altText.includes('Rock')) {
             img.src = `img/rock_${mode}.webp`;
         }
+        
+        const description = document.getElementById(`${toolType}-desc`);
+        if (description) {
+            description.classList.add('visible');
+        }
     });
     
     img.addEventListener('mouseleave', () => {
         img.src = originalSrc;
+        
+        const description = document.getElementById(`${toolType}-desc`);
+        if (description) {
+            description.classList.remove('visible');
+        }
     });
 });
+
+// Timer functionality
+let startTime = Date.now();
+const timerElement = document.querySelector('.timer');
+
+function updateTimer() {
+    const elapsed = Date.now() - startTime;
+    
+    const seconds = Math.floor(elapsed / 1000);
+    const milliseconds = Math.floor((elapsed % 1000) / 10); // Get centiseconds (2 digits)
+    
+    const formattedTime = `${seconds}:${String(milliseconds).padStart(2, '0')}`;
+    timerElement.textContent = formattedTime;
+}
+
+// Update timer every 10ms for smooth millisecond counting
+setInterval(updateTimer, 10);
+updateTimer(); // Initial call
 </script>
 </body>
 </html>
