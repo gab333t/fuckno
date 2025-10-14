@@ -296,15 +296,12 @@ function shakeImage() {
     const img = document.getElementById('current-image');
     const container = document.getElementById('image-display');
     
-    // Determine shake intensity based on selected tool
     const shakeMultiplier = selectedTool === 'dynamite' ? 2.5 : 1;
     const randomX = (Math.random() - 0.5) * 10 * shakeMultiplier;
     const randomY = (Math.random() - 0.5) * 10 * shakeMultiplier;
     
-    // Shake the image
     img.style.transform = `translate(${randomX}px, ${randomY}px)`;
     
-    // Shake all crack SVGs
     const cracks = container.querySelectorAll('svg');
     cracks.forEach(crack => {
         crack.style.transform = `translate(${randomX}px, ${randomY}px)`;
@@ -365,18 +362,15 @@ function cleanupOldFragments() {
 function createSmallFragments(imageElement, clickX, clickY) {
     const rect = imageElement.getBoundingClientRect();
     
-    // Create 2-4 small fragments
     const numFragments = Math.floor(randomRange(2, 5));
     
     for (let i = 0; i < numFragments; i++) {
         const fragment = document.createElement('canvas');
         const ctx = fragment.getContext('2d');
         
-        // Start position close to click location
         const startX = clickX + randomRange(-30, 30);
         const startY = clickY + randomRange(-30, 30);
         
-        // Small fragment size
         const size = randomRange(5, 15);
         const points = [];
         const numPoints = Math.floor(randomRange(3, 5));
@@ -422,11 +416,10 @@ function createSmallFragments(imageElement, clickX, clickY) {
         ctx.drawImage(imageElement, imgX, imgY, rect.width, rect.height);
         ctx.restore();
         
-        // Small, quick burst velocities
         const angle = randomRange(0, TWO_PI);
         const speed = randomRange(50, 150);
         const velocityX = Math.cos(angle) * speed;
-        const velocityY = Math.sin(angle) * speed - randomRange(100, 200); // Extra upward bias
+        const velocityY = Math.sin(angle) * speed - randomRange(100, 200);
         const rotationSpeed = randomRange(-720, 720);
         
         const gravity = 800;
@@ -622,31 +615,25 @@ function createCrack(clickX, clickY, crackType) {
     const imgRect = img.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
     
-    // Calculate click position relative to the actual image element
     const relativeX = clickX - imgRect.left;
     const relativeY = clickY - imgRect.top;
     
-    // Get actual displayed image dimensions from the element itself
     const imgWidth = imgRect.width;
     const imgHeight = imgRect.height;
     
-    // Check if click is outside image bounds
     if (relativeX < 0 || relativeX > imgWidth || relativeY < 0 || relativeY > imgHeight) {
         return;
     }
     
-    // Calculate 75% inset boundary (12.5% margin on each side)
-    const margin = 0.125; // 12.5% margin = 75% usable area
+    const margin = 0.125;
     const minX = imgWidth * margin;
     const maxX = imgWidth * (1 - margin);
     const minY = imgHeight * margin;
     const maxY = imgHeight * (1 - margin);
     
-    // Determine crack color based on theme (black in light, white in dark)
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const crackColor = isDarkMode ? '#000000' : '#FFFFFF';
     
-    // Create SVG positioned EXACTLY over the image, not the container
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.style.position = 'absolute';
     svg.style.top = (imgRect.top - containerRect.top) + 'px';
@@ -658,17 +645,14 @@ function createCrack(clickX, clickY, crackType) {
     svg.style.transition = 'transform 0.1s ease-out';
     svg.setAttribute('viewBox', `0 0 ${imgWidth} ${imgHeight}`);
     
-    // Determine crack properties based on type - THIN LINES
     let numBranches, strokeWidth, segmentLength, segments;
     
     if (crackType === 'light') {
-        // Light cracks: fewer branches, very thin lines, longer reach
         numBranches = Math.floor(randomRange(3, 5));
         strokeWidth = randomRange(1.2, 1.5);
         segmentLength = randomRange(25, 45);
         segments = Math.floor(randomRange(8, 12));
     } else {
-        // Heavy cracks: more branches, thin lines, longer reach
         numBranches = Math.floor(randomRange(6, 10));
         strokeWidth = randomRange(1.6, 1.9);
         segmentLength = randomRange(35, 65);
@@ -678,42 +662,33 @@ function createCrack(clickX, clickY, crackType) {
     for (let i = 0; i < numBranches; i++) {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         
-        // Starting point is the click location (already in image coordinates)
         let pathData = `M ${relativeX} ${relativeY}`;
         
-        // Random initial angle for this branch
         const baseAngle = (i / numBranches) * 360 + randomRange(-30, 30);
         let currentX = relativeX;
         let currentY = relativeY;
         let currentAngle = baseAngle;
         
-        // Create segments for this crack branch
         for (let j = 0; j < segments; j++) {
-            // Length tapers off less dramatically for more sprawl
             const currentSegmentLength = segmentLength * (1 - j / segments * 0.3);
             
-            // Less angle variation for straighter cracks
             currentAngle += randomRange(-25, 25);
             
             const radians = (currentAngle * Math.PI) / 180;
             let nextX = currentX + Math.cos(radians) * currentSegmentLength;
             let nextY = currentY + Math.sin(radians) * currentSegmentLength;
             
-            // Clamp to 75% boundary
             nextX = Math.max(minX, Math.min(maxX, nextX));
             nextY = Math.max(minY, Math.min(maxY, nextY));
             
-            // Less control point variation for smoother cracks
             let controlX = (currentX + nextX) / 2 + randomRange(-5, 5);
             let controlY = (currentY + nextY) / 2 + randomRange(-5, 5);
             
-            // Clamp control points too
             controlX = Math.max(minX, Math.min(maxX, controlX));
             controlY = Math.max(minY, Math.min(maxY, controlY));
             
             pathData += ` Q ${controlX} ${controlY} ${nextX} ${nextY}`;
             
-            // Stop if we hit the boundary
             if (nextX === minX || nextX === maxX || nextY === minY || nextY === maxY) {
                 break;
             }
@@ -721,7 +696,6 @@ function createCrack(clickX, clickY, crackType) {
             currentX = nextX;
             currentY = nextY;
             
-            // More branching for better sprawl
             const branchChance = crackType === 'light' ? 0.25 : 0.4;
             if (Math.random() < branchChance && j > 2 && j < segments - 2) {
                 const branchAngle = currentAngle + randomRange(-70, 70);
@@ -730,7 +704,6 @@ function createCrack(clickX, clickY, crackType) {
                 let branchX = currentX + Math.cos(branchRad) * branchLength;
                 let branchY = currentY + Math.sin(branchRad) * branchLength;
                 
-                // Clamp branch to 75% boundary
                 branchX = Math.max(minX, Math.min(maxX, branchX));
                 branchY = Math.max(minY, Math.min(maxY, branchY));
                 
@@ -773,38 +746,31 @@ function attackImage(event) {
     const damage = toolStats[selectedTool].damage;
     currentHealth -= damage;
     
-    // Clamp health to 0 if it goes negative
     if (currentHealth < 0) currentHealth = 0;
     
     playToolSound(selectedTool);
     shakeImage();
     
-    // Create small fragments on every click
     const img = document.getElementById('current-image');
     createSmallFragments(img, lastClickPosition.x, lastClickPosition.y);
     
-    // Calculate health percentage
     const healthPercent = (currentHealth / maxHealth) * 100;
     
-    // Show light cracks at 70% health
     if (healthPercent <= 70 && !lightCracksShown) {
         createCrack(lastClickPosition.x, lastClickPosition.y, 'light');
         lightCracksShown = true;
     }
     
-    // Show heavy cracks at 30% health
     if (healthPercent <= 30 && !heavyCracksShown) {
         createCrack(lastClickPosition.x, lastClickPosition.y, 'heavy');
         heavyCracksShown = true;
     }
     
-    // Update health bar BEFORE checking if dead
     updateHealthBar();
     
 if (currentHealth <= 0) {
-        isImageBreaking = true; // Prevent further clicks
+        isImageBreaking = true;
         
-        // Small delay to let the health bar animation complete
         setTimeout(() => {
             clearCracks();
             createGlassFragments(img, lastClickPosition.x, lastClickPosition.y, selectedTool);
@@ -821,7 +787,7 @@ if (currentHealth <= 0) {
                     img.style.opacity = '1';
                     lightCracksShown = false;
                     heavyCracksShown = false;
-                    isImageBreaking = false; // Re-enable clicks
+                    isImageBreaking = false;
                     loadNextImage();
                 }, 800);
             } else {
