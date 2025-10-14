@@ -68,13 +68,19 @@ html {
 }
 
 .body-text {
-    font-family: Articulate_Regular;
+    font-family: Articulate_Regular, Arial, Helvetica, sans-serif;
     font-size: 20px;
     margin-left: 20px;
     letter-spacing: -0.25px;
     max-width: 50vw;
     text-align: left;
     text-indent: 2em;    
+}
+
+em {
+    font-style: normal;
+    margin-left: 0.5px;
+    margin-right: 1px;
 }
 
 .menu-icon {
@@ -220,10 +226,13 @@ body {
 .timer {
     position: fixed;
     bottom: 20px;
-    left: 20px;
+    left: 5px;
     font-family: Articulate_Regular;
     font-size: 60px;
     letter-spacing: -0.25px;
+    background-color: white;
+    padding-left: 15px;
+    padding-right: 15px;
     margin: 0;
     z-index: 999;
     opacity: 0;
@@ -235,9 +244,31 @@ body {
     visibility: visible;
 }
 
+.current-label {
+    position: fixed;
+    bottom: 20px;
+    right: 13.5px;
+    font-family: Articulate_Medium;
+    font-size: 20px;
+    letter-spacing: -0.25px;
+    padding: 7.5px 12.5px;
+    margin: 0;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    text-align: right;
+    line-height: 1.2;
+}
+
+.current-label.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
 .game-container {
     display: none;
     flex-direction: column;
+    margin-top: 5vh;
     align-items: center;
     justify-content: center;
     min-height: calc(100vh - 70px - 100px);
@@ -308,7 +339,7 @@ body {
 .health-bar-container {
     width: 100%;
     height: 20px;
-    margin-top: 20px;
+    margin-top: 5vh;
     position: relative;
     overflow: hidden;
 }
@@ -316,7 +347,7 @@ body {
 .health-bar {
     height: 100%;
     width: 100%;
-    transition: width 0.3s ease;
+    transition: width 0.25s ease;
 }
 
 .damage-indicator {
@@ -328,7 +359,7 @@ body {
     font-size: 60px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s;
+    transition: opacity 0.25s;
 }
 
 .damage-indicator.show {
@@ -341,8 +372,12 @@ body {
 
 .info-text {
     margin: 0;
+    margin-top: -2vh;
     text-indent: 0;
+    padding: 7.5px 12.5px;
     text-align: center;
+    position: relative;
+    z-index: 1001;
 }
 
 .tool-switcher {
@@ -423,6 +458,11 @@ body {
         color: white;
     }
     .timer {
+        background-color: white;
+        color: black;
+    }
+    .current-label {
+        background-color: white;
         color: black;
     }
     .start-button {
@@ -438,6 +478,11 @@ body {
         background-color: black;
     }
     .body-text {
+        color: black;
+    }
+
+    .info-text {
+        background-color: white;
         color: black;
     }
 }
@@ -475,6 +520,12 @@ body {
     }
     
     .timer {
+        background-color: black;
+        color: white;
+    }
+    
+    .current-label {
+        background-color: black;
         color: white;
     }
     
@@ -491,6 +542,11 @@ body {
     
     .health-bar {
         background-color: white;
+    }
+
+    .info-text {
+        background-color: black;
+        color: white;
     }
 }
 
@@ -572,6 +628,14 @@ body {
         font-size: 40px;
         bottom: 35px;
         left: 10px;
+    }
+    
+    .current-label {
+        font-size: 14px;
+        bottom: 35px;
+        right: 10px;
+        max-width: 150px;
+        padding: 0;
     }
 
     .marquee-content {

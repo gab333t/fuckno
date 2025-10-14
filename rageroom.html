@@ -54,7 +54,7 @@
         
         <div class="game-info">
             <h2 class="body-text info-text">
-                <span id="images-remaining">0</span> NO's remaining
+                <span id="current-image-number">01</span><em>/</em>76
             </h2>
         </div>
 
@@ -72,7 +72,7 @@
         <h2 class="body-text results-title">RAGE ROOM COMPLETE</h2>
         <div class="results-stats">
             <h2 class="body-text stat-text">Time: <span id="final-time">00:00</span></h2>
-            <h2 class="body-text stat-text">NO's Destroyed: <span id="final-count">0</span></h2>
+            <h2 class="body-text stat-text"><span id="final-count">0</span></h2>
             <h2 class="body-text stat-text">Rank: <span id="final-rank">-</span></h2>
         </div>
         <button class="start-button" id="restart-button">RESTART</button>
@@ -86,10 +86,90 @@
     </div>
 
     <h2 class="timer">00:00</h2>
+    <h2 class="current-label"></h2>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
 const TWO_PI = Math.PI * 2;
+
+const labels = [
+    '01. PARKING24HR',
+    '02. STANDINGFORCONSTRUCTION',
+    '03. BLOCKDRIVEWAY',
+    '04. SMOKING',
+    '05. ELEVATOR_ICOFIRE',
+    '06. DANGERSMOKING',
+    '07. DANGERENTER',
+    '08. STANDING+PARKING',
+    '09. ENTER',
+    '10. EATDRINKSMOKE',
+    '11. ENTERCROSSTRACK',
+    '12. DUMPING',
+    '13. FLYERSMENUSADVERTISEMENTS',
+    '14. UNSOLICITEDADVERTISEMENTS',
+    '15. DUMPINGFINE500',
+    '16. SOLICITINGOREXCEPTIONS',
+    '17. TRESPASSORPROSECUTE',
+    '18. PARKORTOWED',
+    '19. STEALMYRECYCLING',
+    '20. BLOCKDRIVEWAY',
+    '21. TRESPASS',
+    '22. TRESPASSONPROPERTY',
+    '23. THRUTRAFFIC4HOSPITAL',
+    '24. SMOKE25FT',
+    '25. BLOCKSTAIRB',
+    '26. BLOCKFIREEXIT',
+    '27. SMOKING',
+    '28. DUMPANDGETPROSECUTED',
+    '29. SMOKEVAPEECIG',
+    '30. STANDUNDERLIFTS',
+    '31. TRESPASS',
+    '32. PARKINGFORCONSTRUCTION',
+    '33. SOLICITLOITERTRESPASS',
+    '34. BLOCKLOADINGDOCK',
+    '35. PARKSTANDONPRIVATEST',
+    '36. PARKACTIVECROSSING',
+    '37. OUTSIDEFOODBEV',
+    '38. OVERFIIIIILL',
+    '39. PPLONLYOPERATOR',
+    '40. EXITXXXXXX',
+    '41. CHILDRENONCART',
+    '42. TOUCHTHANKS',
+    '43. ENTERROOMRUN',
+    '44. ENTER',
+    '45. COMMERCIALTRAFFIC',
+    '46. RESTROOMS4CUSTOMERSONLY',
+    '47. LOCKBIKESORGETCUT',
+    '48. CHAINBIKE2FENCE',
+    '49. TOBACCOVAPE4UNDER21',
+    '50. FLYERSADSMENUSPLS',
+    '51. SMOKINGDURINGFUELING',
+    '52. DUMPINGBYMTA',
+    '53. HOUSEHOLDORBUSINESSTRASH',
+    '54. IDLINGENGINE',
+    '55. PARKINGBYFDNY',
+    '56. ENTRYORMAYBEYES',
+    '57. HOODIESSKIMASKSBANDANAS',
+    '58. DOGORBIKEINSTORE',
+    '59. TRESPASSING',
+    '60. BLOCKINGPLSANDTHANKS',
+    '61. LITTER4CHURCH',
+    '62. BALLPLAYING',
+    '63. OURLAUNDRYINOURMACHINES',
+    '64. TRESPASSINGORPROSECUTED',
+    '65. TRESPASSINGONOURPROPERTY',
+    '66. STUPIDPPL',
+    '67. MOPEDSANDATVS',
+    '68. POSTINGBILLS',
+    '69. CLIMBING',
+    '70. RIDINGINPORTAUTHORITY',
+    '71. ENTERBUTDELIVERIESROK',
+    '72. SOLICITLOITERORTRESPASS',
+    '73. BIKINGINFLATIRON',
+    '74. SHOESINDRYERS',
+    '75. BUYORSELLEBT',
+    '76. SMOKINGBYPUFFIN',
+];
 
 function setFavicon() {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -276,9 +356,14 @@ function loadNextImage() {
     currentImage.src = `img/no${imageNumber}_${theme}.webp`;
     currentImage.alt = `NO sign ${imageNumber}`;
     
+    const labelElement = document.querySelector('.current-label');
+    const fullLabel = labels[imageNumber - 1];
+    const labelText = fullLabel.split('. ')[1];
+    labelElement.textContent = labelText;
+    
     currentHealth = maxHealth;
     updateHealthBar();
-    updateRemainingCount();
+    updateImageNumber();
     clearCracks();
 }
 
@@ -288,8 +373,12 @@ function updateHealthBar() {
     healthBar.style.width = `${percentage}%`;
 }
 
-function updateRemainingCount() {
-    document.getElementById('images-remaining').textContent = imageQueue.length;
+function updateImageNumber() {
+    if (imageQueue.length === 0) return;
+    
+    const imageNumber = imageQueue[0];
+    const formattedNumber = String(imageNumber).padStart(2, '0');
+    document.getElementById('current-image-number').textContent = formattedNumber;
 }
 
 function shakeImage() {
@@ -337,6 +426,9 @@ function sign(x) {
 let allFragments = [];
 const MAX_FRAGMENTS = 200;
 
+// Store fragment animation data so we can update ground position on resize
+let fragmentAnimations = new Map();
+
 function cleanupOldFragments() {
     if (allFragments.length > MAX_FRAGMENTS) {
         const fragmentsToRemove = allFragments.length - MAX_FRAGMENTS;
@@ -346,6 +438,9 @@ function cleanupOldFragments() {
             if (fragment && fragment.parentNode) {
                 fragment.style.transition = 'opacity 0.5s ease-out';
                 fragment.style.opacity = '0';
+                
+                // Clean up animation data
+                fragmentAnimations.delete(fragment);
                 
                 setTimeout(() => {
                     if (fragment.parentNode) {
@@ -358,6 +453,26 @@ function cleanupOldFragments() {
         allFragments.splice(0, fragmentsToRemove);
     }
 }
+
+// Update ground position for all fragments when window is resized
+window.addEventListener('resize', () => {
+    fragmentAnimations.forEach((data, fragment) => {
+        const newGroundY = window.innerHeight - fragment.height;
+        const oldGroundY = data.groundY;
+        data.groundY = newGroundY;
+        
+        // If fragment was settled on the old ground, move it to the new ground
+        if (!data.isAnimating && data.posY >= oldGroundY - 5) {
+            data.posY = newGroundY;
+            fragment.style.top = data.posY + 'px';
+        }
+        // If fragment is falling and below new ground, adjust position
+        else if (data.posY > newGroundY) {
+            data.posY = newGroundY;
+            fragment.style.top = data.posY + 'px';
+        }
+    });
+});
 
 function createSmallFragments(imageElement, clickX, clickY) {
     const rect = imageElement.getBoundingClientRect();
@@ -424,7 +539,6 @@ function createSmallFragments(imageElement, clickX, clickY) {
         
         const gravity = 800;
         const friction = 0.6;
-        const groundY = window.innerHeight - height;
         
         let posX = startX;
         let posY = startY;
@@ -433,37 +547,45 @@ function createSmallFragments(imageElement, clickX, clickY) {
         let rotation = randomRange(0, 360);
         let isAnimating = true;
         
+        // Store animation data for this fragment
+        const animationData = {
+            posX, posY, velX, velY, rotation,
+            gravity, friction, rotationSpeed,
+            isAnimating,
+            groundY: window.innerHeight - height
+        };
+        
         fragment.style.left = posX + 'px';
         fragment.style.top = posY + 'px';
         fragment.style.transform = `rotate(${rotation}deg)`;
         
         const animate = () => {
-            if (isAnimating) {
+            if (animationData.isAnimating) {
                 const deltaTime = 0.016;
                 
-                velY += gravity * deltaTime;
+                animationData.velY += animationData.gravity * deltaTime;
                 
-                posX += velX * deltaTime;
-                posY += velY * deltaTime;
-                rotation += rotationSpeed * deltaTime;
+                animationData.posX += animationData.velX * deltaTime;
+                animationData.posY += animationData.velY * deltaTime;
+                animationData.rotation += animationData.rotationSpeed * deltaTime;
                 
-                if (posY >= groundY) {
-                    posY = groundY;
-                    velY = -velY * friction;
-                    velX *= friction;
+                if (animationData.posY >= animationData.groundY) {
+                    animationData.posY = animationData.groundY;
+                    animationData.velY = -animationData.velY * animationData.friction;
+                    animationData.velX *= animationData.friction;
                     
-                    if (Math.abs(velY) < 20 && Math.abs(velX) < 20) {
-                        isAnimating = false;
-                        velY = 0;
-                        velX = 0;
+                    if (Math.abs(animationData.velY) < 20 && Math.abs(animationData.velX) < 20) {
+                        animationData.isAnimating = false;
+                        animationData.velY = 0;
+                        animationData.velX = 0;
                     }
                 }
                 
-                fragment.style.left = posX + 'px';
-                fragment.style.top = posY + 'px';
-                fragment.style.transform = `rotate(${rotation}deg)`;
+                fragment.style.left = animationData.posX + 'px';
+                fragment.style.top = animationData.posY + 'px';
+                fragment.style.transform = `rotate(${animationData.rotation}deg)`;
                 
-                if (isAnimating) {
+                if (animationData.isAnimating) {
                     requestAnimationFrame(animate);
                 }
             }
@@ -473,6 +595,7 @@ function createSmallFragments(imageElement, clickX, clickY) {
         
         document.body.appendChild(fragment);
         allFragments.push(fragment);
+        fragmentAnimations.set(fragment, animationData);
     }
     
     cleanupOldFragments();
@@ -533,7 +656,7 @@ function createCrack(clickX, clickY, crackType) {
     
     for (let i = 0; i < numBranches; i++) {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const pathPoints = []; // Store points for this crack path
+        const pathPoints = [];
         
         let pathData = `M ${relativeX} ${relativeY}`;
         pathPoints.push({ x: relativeX, y: relativeY });
@@ -585,7 +708,6 @@ function createCrack(clickX, clickY, crackType) {
                 pathData += ` M ${currentX} ${currentY} L ${branchX} ${branchY}`;
                 pathData += ` M ${currentX} ${currentY}`;
                 
-                // Store branch as a separate path
                 crackPaths.push([
                     { x: currentX, y: currentY },
                     { x: branchX, y: branchY }
@@ -603,7 +725,6 @@ function createCrack(clickX, clickY, crackType) {
         
         svg.appendChild(path);
         
-        // Store the main crack path
         crackPaths.push(pathPoints);
     }
     
@@ -617,18 +738,15 @@ function clearCracks() {
     crackPaths = [];
 }
 
-// Function to find regions divided by crack lines
 function createFragmentsFromCracks(imageElement, tool) {
     const rect = imageElement.getBoundingClientRect();
     
     if (crackPaths.length === 0) {
-        // Fallback to original behavior if no cracks
         createGlassFragmentsFallback(imageElement, rect.left + rect.width / 2, rect.top + rect.height / 2, tool);
         return;
     }
     
-    // Create a grid of sample points to determine regions
-    const gridSize = 20;
+    const gridSize = 4;
     const regions = [];
     
     for (let y = 0; y < gridSize; y++) {
@@ -636,25 +754,22 @@ function createFragmentsFromCracks(imageElement, tool) {
             const centerX = (x + 0.5) * (rect.width / gridSize);
             const centerY = (y + 0.5) * (rect.height / gridSize);
             
-            // Create a fragment for this region
             const fragment = document.createElement('canvas');
             const ctx = fragment.getContext('2d');
             
-            // Create an irregular polygon around this point
             const points = [];
             const numPoints = Math.floor(randomRange(4, 7));
-            const baseRadius = Math.min(rect.width, rect.height) / gridSize * randomRange(0.8, 1.2);
+            const baseRadius = Math.min(rect.width, rect.height) / gridSize * randomRange(1.2, 1.6);
             
             for (let i = 0; i < numPoints; i++) {
                 const angle = (i / numPoints) * TWO_PI;
-                const radius = baseRadius * randomRange(0.6, 1.4);
+                const radius = baseRadius * randomRange(1.8, 2.4);
                 points.push({
                     x: centerX + Math.cos(angle) * radius,
                     y: centerY + Math.sin(angle) * radius
                 });
             }
             
-            // Calculate bounding box
             const minX = Math.min(...points.map(p => p.x));
             const maxX = Math.max(...points.map(p => p.x));
             const minY = Math.min(...points.map(p => p.y));
@@ -672,7 +787,6 @@ function createFragmentsFromCracks(imageElement, tool) {
             fragment.style.pointerEvents = 'none';
             fragment.style.zIndex = '500';
             
-            // Draw the fragment
             ctx.save();
             ctx.translate(-minX, -minY);
             ctx.beginPath();
@@ -683,11 +797,9 @@ function createFragmentsFromCracks(imageElement, tool) {
             ctx.closePath();
             ctx.clip();
             
-            // Draw the image portion
             ctx.drawImage(imageElement, 0, 0, rect.width, rect.height);
             ctx.restore();
             
-            // Position and animate
             const startX = rect.left + centerX;
             const startY = rect.top + centerY;
             
@@ -703,7 +815,6 @@ function createFragmentsFromCracks(imageElement, tool) {
             
             const gravity = 600;
             const friction = 0.5;
-            const groundY = window.innerHeight - height;
             
             let posX = startX - width / 2;
             let posY = startY - height / 2;
@@ -712,37 +823,45 @@ function createFragmentsFromCracks(imageElement, tool) {
             let rotation = randomRange(0, 360);
             let isAnimating = true;
             
+            // Store animation data for this fragment
+            const animationData = {
+                posX, posY, velX, velY, rotation,
+                gravity, friction, rotationSpeed,
+                isAnimating,
+                groundY: window.innerHeight - height
+            };
+            
             fragment.style.left = posX + 'px';
             fragment.style.top = posY + 'px';
             fragment.style.transform = `rotate(${rotation}deg)`;
             
             const animate = () => {
-                if (isAnimating) {
+                if (animationData.isAnimating) {
                     const deltaTime = 0.016;
                     
-                    velY += gravity * deltaTime;
+                    animationData.velY += animationData.gravity * deltaTime;
                     
-                    posX += velX * deltaTime;
-                    posY += velY * deltaTime;
-                    rotation += rotationSpeed * deltaTime;
+                    animationData.posX += animationData.velX * deltaTime;
+                    animationData.posY += animationData.velY * deltaTime;
+                    animationData.rotation += animationData.rotationSpeed * deltaTime;
                     
-                    if (posY >= groundY) {
-                        posY = groundY;
-                        velY = -velY * friction;
-                        velX *= friction;
+                    if (animationData.posY >= animationData.groundY) {
+                        animationData.posY = animationData.groundY;
+                        animationData.velY = -animationData.velY * animationData.friction;
+                        animationData.velX *= animationData.friction;
                         
-                        if (Math.abs(velY) < 30 && Math.abs(velX) < 30) {
-                            isAnimating = false;
-                            velY = 0;
-                            velX = 0;
+                        if (Math.abs(animationData.velY) < 30 && Math.abs(animationData.velX) < 30) {
+                            animationData.isAnimating = false;
+                            animationData.velY = 0;
+                            animationData.velX = 0;
                         }
                     }
                     
-                    fragment.style.left = posX + 'px';
-                    fragment.style.top = posY + 'px';
-                    fragment.style.transform = `rotate(${rotation}deg)`;
+                    fragment.style.left = animationData.posX + 'px';
+                    fragment.style.top = animationData.posY + 'px';
+                    fragment.style.transform = `rotate(${animationData.rotation}deg)`;
                     
-                    if (isAnimating) {
+                    if (animationData.isAnimating) {
                         requestAnimationFrame(animate);
                     }
                 }
@@ -755,6 +874,7 @@ function createFragmentsFromCracks(imageElement, tool) {
             
             document.body.appendChild(fragment);
             allFragments.push(fragment);
+            fragmentAnimations.set(fragment, animationData);
         }
     }
     
@@ -763,7 +883,7 @@ function createFragmentsFromCracks(imageElement, tool) {
 
 function createGlassFragmentsFallback(imageElement, clickX, clickY, tool) {
     const rect = imageElement.getBoundingClientRect();
-    const numFragments = 80;
+    const numFragments = 30;
     
     for (let i = 0; i < numFragments; i++) {
         const fragment = document.createElement('canvas');
@@ -772,7 +892,7 @@ function createGlassFragmentsFallback(imageElement, clickX, clickY, tool) {
         const startX = rect.left + randomRange(0, rect.width);
         const startY = rect.top + randomRange(0, rect.height);
         
-        const size = randomRange(15, 45);
+        const size = randomRange(25, 75);
         const points = [];
         const numPoints = Math.floor(randomRange(3, 6));
         
@@ -829,7 +949,6 @@ function createGlassFragmentsFallback(imageElement, clickX, clickY, tool) {
         
         const gravity = 600;
         const friction = 0.5;
-        const groundY = window.innerHeight - height;
         
         let posX = startX;
         let posY = startY;
@@ -838,37 +957,45 @@ function createGlassFragmentsFallback(imageElement, clickX, clickY, tool) {
         let rotation = randomRange(0, 360);
         let isAnimating = true;
         
+        // Store animation data for this fragment
+        const animationData = {
+            posX, posY, velX, velY, rotation,
+            gravity, friction, rotationSpeed,
+            isAnimating,
+            groundY: window.innerHeight - height
+        };
+        
         fragment.style.left = posX + 'px';
         fragment.style.top = posY + 'px';
         fragment.style.transform = `rotate(${rotation}deg)`;
         
         const animate = () => {
-            if (isAnimating) {
+            if (animationData.isAnimating) {
                 const deltaTime = 0.016;
                 
-                velY += gravity * deltaTime;
+                animationData.velY += animationData.gravity * deltaTime;
                 
-                posX += velX * deltaTime;
-                posY += velY * deltaTime;
-                rotation += rotationSpeed * deltaTime;
+                animationData.posX += animationData.velX * deltaTime;
+                animationData.posY += animationData.velY * deltaTime;
+                animationData.rotation += animationData.rotationSpeed * deltaTime;
                 
-                if (posY >= groundY) {
-                    posY = groundY;
-                    velY = -velY * friction;
-                    velX *= friction;
+                if (animationData.posY >= animationData.groundY) {
+                    animationData.posY = animationData.groundY;
+                    animationData.velY = -animationData.velY * animationData.friction;
+                    animationData.velX *= animationData.friction;
                     
-                    if (Math.abs(velY) < 30 && Math.abs(velX) < 30) {
-                        isAnimating = false;
-                        velY = 0;
-                        velX = 0;
+                    if (Math.abs(animationData.velY) < 30 && Math.abs(animationData.velX) < 30) {
+                        animationData.isAnimating = false;
+                        animationData.velY = 0;
+                        animationData.velX = 0;
                     }
                 }
                 
-                fragment.style.left = posX + 'px';
-                fragment.style.top = posY + 'px';
-                fragment.style.transform = `rotate(${rotation}deg)`;
+                fragment.style.left = animationData.posX + 'px';
+                fragment.style.top = animationData.posY + 'px';
+                fragment.style.transform = `rotate(${animationData.rotation}deg)`;
                 
-                if (isAnimating) {
+                if (animationData.isAnimating) {
                     requestAnimationFrame(animate);
                 }
             }
@@ -881,6 +1008,7 @@ function createGlassFragmentsFallback(imageElement, clickX, clickY, tool) {
         
         document.body.appendChild(fragment);
         allFragments.push(fragment);
+        fragmentAnimations.set(fragment, animationData);
     }
     
     cleanupOldFragments();
@@ -983,12 +1111,14 @@ function endGame() {
     
     document.getElementById('game-container').classList.remove('visible');
     document.querySelector('.timer').classList.remove('visible');
+    document.querySelector('.current-label').classList.remove('visible');
     document.querySelector('.bottom-marquee-container').classList.remove('visible');
     document.getElementById('results-container').classList.add('visible');
 }
 
 document.getElementById('start-button').addEventListener('click', () => {
     document.querySelector('.timer').classList.add('visible');
+    document.querySelector('.current-label').classList.add('visible');
     document.querySelector('.bottom-marquee-container').classList.add('visible');
     document.getElementById('instructions-container').classList.remove('visible');
     document.getElementById('game-container').classList.add('visible');
